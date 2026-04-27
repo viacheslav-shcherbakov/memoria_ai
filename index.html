@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#ea580c">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Memoria">
+    <title>Memoria — Личная память</title>
+    <link rel="manifest" href="manifest.json">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%231c1917'/><text x='50' y='65' font-size='50' text-anchor='middle' fill='%23fb923c'>🧠</text></svg>">
+    <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'><rect width='180' height='180' rx='40' fill='%231c1917'/><text x='90' y='120' font-size='90' text-anchor='middle' fill='%23fb923c'>🧠</text></svg>">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#ea580c',
+                        secondary: '#f97316',
+                        dark: '#1c1917',
+                        darker: '#0c0a09',
+                        card: '#292524',
+                    }
+                }
+            }
+        }
+    </script>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body class="bg-darker text-gray-100 min-h-screen">
+    <!-- Onboarding -->
+    <div id="onboarding" class="fixed inset-0 z-[100] flex flex-col bg-darker dark:bg-stone-50">
+        <div class="flex-1 flex flex-col items-center justify-center p-6 text-center">
+            <div id="onboarding-content">
+                <div class="onboarding-screen" data-screen="1">
+                    <div class="text-8xl mb-8">🧠</div>
+                    <h1 class="text-3xl font-bold mb-4 text-stone-100 dark:text-stone-900">Добро пожаловать в Memoria</h1>
+                    <p class="text-stone-400 dark:text-stone-500 text-lg mb-8">Ваш личный архив мыслей и проектов</p>
+                    <button class="onboarding-next bg-primary px-8 py-3 rounded-xl font-semibold text-white">Начать</button>
+                </div>
+                <div class="onboarding-screen hidden" data-screen="2">
+                    <div class="text-8xl mb-8">🤖</div>
+                    <h2 class="text-2xl font-bold mb-4 text-stone-100 dark:text-stone-900">AI прямо в вашем телефоне</h2>
+                    <p class="text-stone-400 dark:text-stone-500 text-lg mb-8">Автотеги и аналитика. Всё оффлайн.</p>
+                    <div class="flex gap-3 justify-center">
+                        <button class="onboarding-prev bg-card dark:bg-white px-6 py-3 rounded-xl dark:text-stone-900">Назад</button>
+                        <button class="onboarding-next bg-primary px-8 py-3 rounded-xl font-semibold text-white">Далее</button>
+                    </div>
+                </div>
+                <div class="onboarding-screen hidden" data-screen="3">
+                    <div class="text-8xl mb-8">🔒</div>
+                    <h2 class="text-2xl font-bold mb-4 text-stone-100 dark:text-stone-900">Ваши данные = только ваши</h2>
+                    <p class="text-stone-400 dark:text-stone-500 text-lg mb-8">Никаких аккаунтов и облаков.</p>
+                    <div class="flex gap-3 justify-center">
+                        <button class="onboarding-prev bg-card dark:bg-white px-6 py-3 rounded-xl dark:text-stone-900">Назад</button>
+                        <button id="onboarding-finish" class="bg-primary px-8 py-3 rounded-xl font-semibold text-white">В приложение</button>
+                    </div>
+                </div>
+            </div>
+            <div class="flex gap-2 mt-8">
+                <div class="onboarding-dot w-2 h-2 rounded-full bg-primary" data-screen="1"></div>
+                <div class="onboarding-dot w-2 h-2 rounded-full bg-stone-600" data-screen="2"></div>
+                <div class="onboarding-dot w-2 h-2 rounded-full bg-stone-600" data-screen="3"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tab Screens -->
+    <div id="tab-views" class="hidden">
+        <!-- TAB 1: Записи -->
+        <div id="tab-memories" class="tab-view active">
+            <!-- Header -->
+            <header class="fixed top-0 left-0 right-0 bg-darker dark:bg-stone-100 z-40 border-b border-stone-800 dark:border-stone-300">
+                <div class="p-4">
+                    <!-- Theme Toggle -->
+                    <div class="flex items-center justify-between mb-3">
+                        <h1 class="text-xl font-bold text-stone-100 dark:text-stone-900">🧠 Memoria</h1>
+                        <button id="theme-toggle" class="bg-card dark:bg-white border border-stone-700 dark:border-stone-300 w-10 h-10 rounded-xl flex items-center justify-center text-lg hover:scale-105 transition-transform" title="Сменить тему">
+                            🌙
+                        </button>
+                    </div>
+                    <!-- Project Pills -->
+                    <div id="project-pills" class="flex gap-2 overflow-x-auto pb-1 mb-3 scrollbar-hide"></div>
+                    <!-- Search -->
+                    <div class="flex items-center gap-2">
+                        <div class="flex-1 relative">
+                            <input type="text" id="search-input" placeholder="Поиск по записям..."
+                                class="w-full bg-card dark:bg-stone-200 border border-stone-700 dark:border-stone-300 rounded-xl px-4 py-2 pl-10 text-sm focus:outline-none focus:border-primary">
+                            <span class="absolute left-3 top-1/2 -translate-y-1/2 text-stone-500">🔍</span>
+                            <button id="clear-search" class="hidden absolute right-3 top-1/2 -translate-y-1/2 text-stone-500">✕</button>
+                        </div>
+                        <button id="tags-btn" class="bg-card dark:bg-white border border-stone-700 dark:border-stone-300 px-3 py-2 rounded-xl hover:scale-105 transition-transform" title="Теги">
+                            🏷️
+                        </button>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Main Content -->
+            <main class="pt-40 pb-24 px-4 max-w-lg mx-auto">
+                <div id="memories-list" class="space-y-3"></div>
+                <div id="empty-state" class="hidden text-center py-16">
+                    <p class="text-6xl mb-4 animate-bounce">📝</p>
+                    <p class="text-stone-400 dark:text-stone-500 text-lg mb-2">Пока пусто</p>
+                    <p class="text-stone-500 dark:text-stone-400 text-sm mb-6">Создайте первую запись</p>
+                    <button id="empty-add-btn" class="bg-gradient-to-r from-primary to-secondary px-6 py-3 rounded-xl font-medium text-white shadow-lg shadow-orange-500/20">Написать</button>
+                </div>
+            </main>
+        </div>
+
+        <!-- TAB 2: Аналитика -->
+        <div id="tab-analytics" class="tab-view hidden">
+            <header class="fixed top-0 left-0 right-0 bg-darker dark:bg-stone-100 z-40 border-b border-stone-800 dark:border-stone-300">
+                <div class="p-4">
+                    <h1 class="text-xl font-bold text-stone-100 dark:text-stone-900">📊 Аналитика</h1>
+                </div>
+            </header>
+            <main class="pt-20 pb-24 px-4 max-w-lg mx-auto">
+                <!-- Tabs -->
+                <div class="flex gap-1 mb-4 bg-card dark:bg-stone-200 rounded-xl p-1">
+                    <button class="analytics-tab-btn flex-1 py-2 rounded-lg bg-primary text-white text-sm font-medium" data-tab="moods">Настроения</button>
+                    <button class="analytics-tab-btn flex-1 py-2 rounded-lg text-stone-400 dark:text-stone-600 text-sm" data-tab="tags">Теги</button>
+                    <button class="analytics-tab-btn flex-1 py-2 rounded-lg text-stone-400 dark:text-stone-600 text-sm" data-tab="insights">Инсайты</button>
+                </div>
+                <div id="analytics-content" class="min-h-[300px]">
+                    <!-- Заполняется JS -->
+                </div>
+            </main>
+        </div>
+
+        <!-- TAB 3: Проекты -->
+        <div id="tab-projects" class="tab-view hidden">
+            <header class="fixed top-0 left-0 right-0 bg-darker dark:bg-stone-100 z-40 border-b border-stone-800 dark:border-stone-300">
+                <div class="p-4">
+                    <h1 class="text-xl font-bold text-stone-100 dark:text-stone-900">📁 Проекты</h1>
+                </div>
+            </header>
+            <main class="pt-20 pb-24 px-4 max-w-lg mx-auto">
+                <div id="projects-list" class="space-y-3">
+                    <!-- Заполняется JS -->
+                </div>
+                <div id="projects-empty" class="hidden text-center py-16">
+                    <p class="text-6xl mb-4">📁</p>
+                    <p class="text-stone-400 dark:text-stone-500 text-lg mb-2">Нет проектов</p>
+                    <p class="text-stone-500 dark:text-stone-400 text-sm">Создайте проект для группировки записей</p>
+                </div>
+            </main>
+        </div>
+
+        <!-- TAB 4: Настройки -->
+        <div id="tab-settings" class="tab-view hidden">
+            <header class="fixed top-0 left-0 right-0 bg-darker dark:bg-stone-100 z-40 border-b border-stone-800 dark:border-stone-300">
+                <div class="p-4">
+                    <h1 class="text-xl font-bold text-stone-100 dark:text-stone-900">⚙️ Настройки</h1>
+                </div>
+            </header>
+            <main class="pt-20 pb-24 px-4 max-w-lg mx-auto space-y-4">
+                <div class="bg-card dark:bg-white rounded-xl overflow-hidden">
+                    <div class="px-4 py-3 border-b border-stone-800 dark:border-stone-200">
+                        <h3 class="text-sm font-semibold text-stone-500 dark:text-stone-400 uppercase">Интерфейс</h3>
+                    </div>
+                    <div class="flex items-center justify-between px-4 py-3">
+                        <span class="text-white dark:text-stone-900">🌙 Тёмная тема</span>
+                        <label class="relative inline-flex items-center cursor-pointer">
+                            <input type="checkbox" id="dark-mode-toggle" class="sr-only peer" checked>
+                            <div class="w-11 h-6 bg-stone-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+                        </label>
+                    </div>
+                </div>
+                <div class="bg-card dark:bg-white rounded-xl overflow-hidden">
+                    <div class="px-4 py-3 border-b border-stone-800 dark:border-stone-200">
+                        <h3 class="text-sm font-semibold text-stone-500 dark:text-stone-400 uppercase">AI</h3>
+                    </div>
+                    <div class="flex items-center justify-between px-4 py-3">
+                        <span class="text-white dark:text-stone-900">🤖 Авто-тегирование</span>
+                        <label class="relative inline-flex items-center cursor-pointer">
+                            <input type="checkbox" id="ai-toggle" class="sr-only peer" checked>
+                            <div class="w-11 h-6 bg-stone-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-green-500"></div>
+                        </label>
+                    </div>
+                    <div class="flex items-center justify-between px-4 py-3 border-t border-stone-800 dark:border-stone-200">
+                        <span class="text-white dark:text-stone-900">🔄 Обновить корпус AI</span>
+                        <button id="retrain-ai-btn" class="bg-stone-700 dark:bg-stone-100 px-3 py-1.5 rounded-lg text-xs text-white dark:text-stone-900 hover:bg-stone-600 transition">Обновить</button>
+                    </div>
+                </div>
+                <div class="bg-card dark:bg-white rounded-xl overflow-hidden">
+                    <div class="px-4 py-3 border-b border-stone-800 dark:border-stone-200">
+                        <h3 class="text-sm font-semibold text-stone-500 dark:text-stone-400 uppercase">Данные</h3>
+                    </div>
+                    <div class="flex items-center justify-between px-4 py-3">
+                        <span class="text-white dark:text-stone-900">📤 Экспорт данных</span>
+                        <button id="export-data-btn" class="bg-stone-700 dark:bg-stone-100 px-3 py-1.5 rounded-lg text-xs text-white dark:text-stone-900 hover:bg-stone-600 transition">Экспорт</button>
+                    </div>
+                    <div class="flex items-center justify-between px-4 py-3 border-t border-stone-800 dark:border-stone-200">
+                        <span class="text-white dark:text-stone-900">📥 Импорт данных</span>
+                        <button id="import-data-btn" class="bg-stone-700 dark:bg-stone-100 px-3 py-1.5 rounded-lg text-xs text-white dark:text-stone-900 hover:bg-stone-600 transition">Импорт</button>
+                    </div>
+                    <div class="flex items-center justify-between px-4 py-3 border-t border-stone-800 dark:border-stone-200">
+                        <span class="text-white dark:text-stone-900">🗑️ Сбросить онбординг</span>
+                        <button id="reset-onboarding-btn" class="bg-stone-700 dark:bg-stone-100 px-3 py-1.5 rounded-lg text-xs text-white dark:text-stone-900 hover:bg-stone-600 transition">Сброс</button>
+                    </div>
+                </div>
+                <div class="text-center py-4">
+                    <p class="text-xs text-stone-600 dark:text-stone-400">Memoria v2.0</p>
+                    <p class="text-xs text-stone-500 dark:text-stone-500">Личная память • Все данные локально 📱</p>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- Bottom Tab Bar -->
+    <nav id="bottom-tabs" class="fixed bottom-0 left-0 right-0 bg-darker/95 dark:bg-stone-100/95 backdrop-blur-sm border-t border-stone-800 dark:border-stone-300 z-40 pb-[env(safe-area-inset-bottom)]">
+        <div class="flex items-center justify-around h-16">
+            <button class="tab-btn active flex flex-col items-center justify-center w-full h-full text-primary" data-tab="memories">
+                <span class="text-xl mb-0.5 tab-icon transition-transform">📝</span>
+                <span class="text-[10px] font-medium tab-label">Записи</span>
+            </button>
+            <button class="tab-btn flex flex-col items-center justify-center w-full h-full text-stone-500" data-tab="analytics">
+                <span class="text-xl mb-0.5 tab-icon transition-transform">📊</span>
+                <span class="text-[10px] font-medium tab-label">Аналитика</span>
+            </button>
+            <button class="tab-btn flex flex-col items-center justify-center w-full h-full text-stone-500" data-tab="projects">
+                <span class="text-xl mb-0.5 tab-icon transition-transform">📁</span>
+                <span class="text-[10px] font-medium tab-label">Проекты</span>
+            </button>
+            <button class="tab-btn flex flex-col items-center justify-center w-full h-full text-stone-500" data-tab="settings">
+                <span class="text-xl mb-0.5 tab-icon transition-transform">⚙️</span>
+                <span class="text-[10px] font-medium tab-label">Настройки</span>
+            </button>
+        </div>
+    </nav>
+
+    <!-- Add FAB -->
+    <button id="add-btn" class="fixed right-6 w-14 h-14 bg-gradient-to-r from-primary to-secondary rounded-full shadow-xl shadow-orange-500/30 flex items-center justify-center text-2xl text-white hover:scale-110 active:scale-95 transition-transform z-30" style="bottom: 5rem;">
+        +
+    </button>
+
+    <!-- Memory Modal (Bottom Sheet) -->
+    <div id="memory-modal" class="hidden fixed inset-0 bg-black/80 z-50 flex items-end">
+        <div class="bg-card dark:bg-white w-full rounded-t-3xl max-h-[90vh] overflow-y-auto">
+            <!-- Drag Handle -->
+            <div class="flex justify-center pt-3 pb-1">
+                <div class="w-10 h-1 bg-stone-600 dark:bg-stone-300 rounded-full"></div>
+            </div>
+            <div class="p-6 pt-2">
+                <div class="flex justify-between items-start mb-4">
+                    <div class="flex-1">
+                        <input type="text" id="modal-title" placeholder="Тема записи"
+                            class="text-xl font-bold bg-transparent border-none focus:outline-none w-full placeholder-stone-600 dark:placeholder-stone-400 text-stone-100 dark:text-stone-900">
+                        <input type="date" id="modal-date" class="text-sm text-stone-400 bg-transparent border-none mt-1 dark:text-stone-500">
+                    </div>
+                    <button id="close-modal" class="text-stone-400 hover:text-white text-2xl ml-4">✕</button>
+                </div>
+
+                <!-- Mood Buttons -->
+                <div class="mb-4">
+                    <label class="text-xs text-stone-500 dark:text-stone-400 block mb-2">Настроение</label>
+                    <div id="mood-buttons" class="flex gap-2 overflow-x-auto">
+                        <button class="mood-btn flex-shrink-0 px-3 py-2 rounded-xl border border-stone-700 dark:border-stone-300 bg-darker dark:bg-stone-100 text-center hover:border-primary/50 transition min-w-[70px]" data-mood="routine">
+                            <span class="text-lg">🐌</span>
+                            <span class="text-[10px] block text-stone-400 dark:text-stone-500">Рутина</span>
+                        </button>
+                        <button class="mood-btn flex-shrink-0 px-3 py-2 rounded-xl border border-stone-700 dark:border-stone-300 bg-darker dark:bg-stone-100 text-center hover:border-primary/50 transition min-w-[70px]" data-mood="breakthrough">
+                            <span class="text-lg">🔥</span>
+                            <span class="text-[10px] block text-stone-400 dark:text-stone-500">Прорыв</span>
+                        </button>
+                        <button class="mood-btn flex-shrink-0 px-3 py-2 rounded-xl border border-stone-700 dark:border-stone-300 bg-darker dark:bg-stone-100 text-center hover:border-primary/50 transition min-w-[70px]" data-mood="blocker">
+                            <span class="text-lg">🚧</span>
+                            <span class="text-[10px] block text-stone-400 dark:text-stone-500">Блокер</span>
+                        </button>
+                        <button class="mood-btn flex-shrink-0 px-3 py-2 rounded-xl border border-stone-700 dark:border-stone-300 bg-darker dark:bg-stone-100 text-center hover:border-primary/50 transition min-w-[70px]" data-mood="solved">
+                            <span class="text-lg">✅</span>
+                            <span class="text-[10px] block text-stone-400 dark:text-stone-500">Решено</span>
+                        </button>
+                        <button class="mood-btn flex-shrink-0 px-3 py-2 rounded-xl border border-stone-700 dark:border-stone-300 bg-darker dark:bg-stone-100 text-center hover:border-primary/50 transition min-w-[70px]" data-mood="research">
+                            <span class="text-lg">🔬</span>
+                            <span class="text-[10px] block text-stone-400 dark:text-stone-500">Поиск</span>
+                        </button>
+                        <button class="mood-btn flex-shrink-0 px-3 py-2 rounded-xl border border-stone-700 dark:border-stone-300 bg-darker dark:bg-stone-100 text-center hover:border-primary/50 transition min-w-[70px]" data-mood="experiment">
+                            <span class="text-lg">🧪</span>
+                            <span class="text-[10px] block text-stone-400 dark:text-stone-500">Тест</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Project Selection -->
+                <div class="mb-4">
+                    <label class="text-xs text-stone-500 dark:text-stone-400 block mb-2">Проект</label>
+                    <div id="modal-project-pills" class="flex gap-2 overflow-x-auto">
+                        <!-- Заполняется JS -->
+                    </div>
+                </div>
+
+                <!-- New Project Input (hidden by default) -->
+                <div id="new-project-input" class="hidden mb-4">
+                    <input type="text" id="modal-new-project-name" placeholder="Название нового проекта"
+                        class="w-full bg-darker dark:bg-stone-100 border border-primary/50 rounded-xl px-4 py-2 text-sm focus:outline-none focus:border-primary text-stone-100 dark:text-stone-900">
+                </div>
+
+                <textarea id="modal-content" placeholder="Текст записи..."
+                    class="w-full h-40 bg-darker dark:bg-stone-100 border border-stone-700 dark:border-stone-300 rounded-xl p-4 text-sm resize-none focus:outline-none focus:border-primary placeholder-stone-600 dark:placeholder-stone-400 text-stone-100 dark:text-stone-900"></textarea>
+
+                <input type="text" id="modal-tags" placeholder="Теги (через запятую)"
+                    class="w-full mt-3 bg-darker dark:bg-stone-100 border border-stone-700 dark:border-stone-300 rounded-xl px-4 py-2 text-sm focus:outline-none focus:border-primary placeholder-stone-600 dark:placeholder-stone-400 text-stone-100 dark:text-stone-900">
+
+                <div class="flex gap-3 mt-4">
+                    <button id="delete-memory" class="hidden px-4 py-2 rounded-xl bg-red-900/50 text-red-400">Удалить</button>
+                    <button id="save-memory" class="flex-1 px-4 py-2 rounded-xl bg-primary text-white font-medium">Сохранить</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tags Modal -->
+    <div id="tags-modal" class="hidden fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4">
+        <div class="bg-card dark:bg-white w-full max-w-md rounded-2xl p-6">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-bold text-stone-100 dark:text-stone-900">Теги</h3>
+                <button id="close-tags" class="text-stone-400 hover:text-white text-2xl">✕</button>
+            </div>
+            <div id="tags-cloud" class="flex flex-wrap gap-2 max-h-[50vh] overflow-y-auto"></div>
+        </div>
+    </div>
+
+    <!-- Create Project Modal -->
+    <div id="create-project-modal" class="hidden fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4">
+        <div class="bg-card dark:bg-white w-full max-w-sm rounded-2xl p-6">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-bold text-stone-100 dark:text-stone-900">Новый проект</h3>
+                <button id="close-project-modal" class="text-stone-400 hover:text-white text-2xl">✕</button>
+            </div>
+            <input type="text" id="new-project-name" placeholder="Название проекта"
+                class="w-full bg-darker dark:bg-stone-100 border border-stone-700 dark:border-stone-300 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-primary text-stone-100 dark:text-stone-900">
+            <input type="text" id="new-project-desc" placeholder="Описание (необязательно)"
+                class="w-full mt-3 bg-darker dark:bg-stone-100 border border-stone-700 dark:border-stone-300 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-primary text-stone-100 dark:text-stone-900">
+            <div class="flex gap-3 mt-4">
+                <button id="cancel-create-project" class="flex-1 px-4 py-2 rounded-xl bg-stone-700 dark:bg-stone-200 text-white dark:text-stone-900">Отмена</button>
+                <button id="confirm-create-project" class="flex-1 px-4 py-2 rounded-xl bg-primary text-white font-medium">Создать</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="js/db.js"></script>
+    <script src="js/search.js"></script>
+    <script src="js/tags.js"></script>
+    <script src="js/ui.js"></script>
+    <script src="js/project-service.js"></script>
+    <script src="js/ui-reports.js"></script>
+    <script src="js/ai-service.js"></script>
+    <script src="js/swipe-gestures.js"></script>
+    <script src="js/app.js"></script>
+    <script src="js/onboarding.js"></script>
+</body>
+</html>

@@ -1,0 +1,345 @@
+* {
+    -webkit-tap-highlight-color: transparent;
+}
+
+body {
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+}
+
+/* Scrollbar hide — for horizontal pill scrolling */
+.scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+.scrollbar-hide::-webkit-scrollbar {
+    display: none;
+}
+
+/* ==================== TAB NAVIGATION ==================== */
+.tab-view {
+    min-height: 100vh;
+}
+
+#bottom-tabs .tab-btn {
+    position: relative;
+    -webkit-tap-highlight-color: transparent;
+}
+
+#bottom-tabs .tab-btn.active::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 40%;
+    height: 2px;
+    background: var(--primary, #ea580c);
+    border-radius: 0 0 2px 2px;
+}
+
+/* ==================== PROJECT PILLS ==================== */
+#project-pills::-webkit-scrollbar {
+    display: none;
+}
+
+.project-pill {
+    user-select: none;
+    white-space: nowrap;
+}
+
+.modal-project-pill {
+    user-select: none;
+    white-space: nowrap;
+}
+
+/* ==================== MOOD BUTTONS ==================== */
+.mood-btn {
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.mood-btn:active {
+    transform: scale(0.95);
+}
+
+/* ==================== MEMORY CARDS ==================== */
+.memory-card {
+    background: #292524;
+    border-radius: 1rem;
+    padding: 1rem;
+    border: 1px solid #44403c;
+    transition: all 0.2s ease;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+    touch-action: pan-y;
+}
+
+.memory-card:hover,
+.memory-card:active {
+    border-color: #ea580c;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(234, 88, 12, 0.15);
+}
+
+.memory-card.expanded {
+    background: #1c1917;
+    border-color: #ea580c;
+}
+
+.memory-card .preview {
+    display: block;
+}
+
+.memory-card.expanded .preview {
+    display: none;
+}
+
+.memory-card .full-content {
+    display: none;
+}
+
+.memory-card.expanded .full-content {
+    display: block;
+}
+
+.memory-card .expand-icon {
+    transition: transform 0.2s;
+}
+
+.memory-card.expanded .expand-icon {
+    transform: rotate(180deg);
+}
+
+/* Swipe layers */
+.swipe-layer {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    pointer-events: none;
+    transition: opacity 0.2s;
+}
+
+.swipe-layer-left {
+    right: 0;
+    background: #dc2626;
+    justify-content: flex-end;
+    padding-right: 1.5rem;
+}
+
+.swipe-layer-right {
+    left: 0;
+    background: #2563eb;
+    justify-content: flex-start;
+    padding-left: 1.5rem;
+}
+
+.swipe-action-icon {
+    font-size: 1.5rem;
+    color: white;
+    opacity: 0.9;
+    transition: transform 0.2s;
+}
+
+.memory-card.swiping .swipe-action-icon {
+    transform: scale(1.1);
+}
+
+/* ==================== TAGS ==================== */
+.tag {
+    display: inline-block;
+    padding: 0.25rem 0.75rem;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    background: rgba(234, 88, 12, 0.2);
+    color: #fb923c;
+    border: 1px solid rgba(234, 88, 12, 0.3);
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.tag:hover {
+    background: rgba(234, 88, 12, 0.4);
+}
+
+.tag.active {
+    background: #ea580c;
+    color: white;
+}
+
+.ai-tag {
+    background: rgba(59, 130, 246, 0.15);
+    color: #60a5fa;
+    border-color: rgba(59, 130, 246, 0.3);
+}
+
+.ai-tag:hover {
+    background: rgba(59, 130, 246, 0.3);
+}
+
+.tag-size-sm { font-size: 0.7rem; padding: 0.2rem 0.5rem; }
+.tag-size-md { font-size: 0.85rem; }
+.tag-size-lg { font-size: 1rem; padding: 0.4rem 1rem; }
+
+/* ==================== MODALS ==================== */
+.modal-open {
+    overflow: hidden;
+}
+
+#memory-modal.active {
+    display: flex;
+}
+
+#memory-modal.active > div {
+    transform: translateY(0);
+}
+
+#memory-modal > div {
+    transform: translateY(100%);
+}
+
+#tags-modal.active {
+    display: flex;
+}
+
+/* ==================== ANIMATIONS ==================== */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fade-in {
+    animation: fadeIn 0.3s ease-out;
+}
+
+@keyframes slideInFromBottom {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+}
+
+.memory-card-new {
+    animation: slideInFromBottom 0.4s ease-out;
+}
+
+@keyframes checkmark {
+    0% { transform: scale(0) rotate(-45deg); opacity: 0; }
+    50% { transform: scale(1.3) rotate(0deg); opacity: 1; }
+    100% { transform: scale(1) rotate(0deg); opacity: 1; }
+}
+
+.save-success {
+    animation: pulse 0.5s ease-out;
+}
+
+/* ==================== AI PROGRESS ==================== */
+#ai-progress {
+    position: fixed;
+    top: 80px;
+    left: 1rem;
+    right: 1rem;
+    max-width: 28rem;
+    margin: 0 auto;
+    z-index: 60;
+}
+
+/* ==================== SCROLLBAR ==================== */
+.scrollbar-thin::-webkit-scrollbar {
+    width: 4px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb {
+    background: #44403c;
+    border-radius: 2px;
+}
+
+input[type="date"]::-webkit-calendar-picker-indicator {
+    filter: invert(0.7);
+    cursor: pointer;
+}
+
+textarea::placeholder,
+input::placeholder {
+    color: #78716c;
+}
+
+input:focus,
+textarea:focus {
+    outline: none;
+}
+
+/* ==================== DARK MODE OVERRIDES ==================== */
+/* When html has .dark class, Tailwind's dark: variants activate */
+/* These custom overrides handle remaining elements */
+html.dark body {
+    background-color: #f5f5f4;
+    color: #1c1917;
+}
+
+html.dark .memory-card {
+    background: #ffffff;
+    border-color: #e7e5e4;
+}
+
+html.dark .memory-card:hover,
+html.dark .memory-card:active {
+    border-color: #ea580c;
+    box-shadow: 0 4px 12px rgba(234, 88, 12, 0.1);
+}
+
+html.dark .memory-card.expanded {
+    background: #f5f5f4;
+    border-color: #ea580c;
+}
+
+html.dark .tag {
+    background: rgba(234, 88, 12, 0.1);
+    color: #ea580c;
+    border-color: rgba(234, 88, 12, 0.2);
+}
+
+html.dark .modal-open {
+    background-color: rgba(255, 255, 255, 0.95);
+}
+
+/* ==================== TEXT GRADIENT (card fade) ==================== */
+.card-fade-bottom {
+    position: relative;
+    overflow: hidden;
+}
+
+.card-fade-bottom::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 2rem;
+    background: linear-gradient(transparent, #292524);
+    pointer-events: none;
+}
+
+/* ==================== RESPONSIVE ==================== */
+@media (min-width: 768px) {
+    #bottom-tabs {
+        display: none;
+    }
+    .tab-view {
+        display: none;
+    }
+    #tab-memories {
+        display: block !important;
+    }
+    #add-btn {
+        bottom: 1.5rem !important;
+    }
+}
