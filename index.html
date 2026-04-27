@@ -32,10 +32,15 @@
         // Apply theme immediately to prevent flash
         (function() {
             const saved = localStorage.getItem('memoria-dark-mode');
+            // saved === null → не задано → тёмная тема (по умолчанию)
+            // saved === 'true' → тёмная тема
+            // saved === 'false' → светлая тема
             const isDark = saved === null ? true : saved === 'true';
             if (!isDark) {
+                // Светлая тема: добавляем класс dark для Tailwind
                 document.documentElement.classList.add('dark');
             }
+            // Тёмная тема: класс dark не добавляем
         })();
     </script>
 </head>
@@ -82,7 +87,7 @@
         <!-- TAB 1: Записи -->
         <div id="tab-memories" class="tab-view active">
             <!-- Header -->
-            <header class="fixed top-0 left-0 right-0 bg-darker dark:bg-stone-100 z-40 border-b border-stone-800 dark:border-stone-300">
+            <header class="fixed top-0 left-0 right-0 bg-darker dark:bg-stone-100 z-50 border-b border-stone-800 dark:border-stone-300">
                 <div class="p-4">
                     <!-- Theme Toggle -->
                     <div class="flex items-center justify-between mb-3">
@@ -109,7 +114,7 @@
             </header>
 
             <!-- Main Content -->
-            <main class="pt-40 pb-24 px-4 max-w-lg mx-auto">
+            <main class="pt-[280px] pb-28 px-4 max-w-lg mx-auto">
                 <div id="memories-list" class="space-y-3"></div>
                 <div id="empty-state" class="hidden text-center py-16">
                     <p class="text-6xl mb-4 animate-bounce">📝</p>
@@ -122,12 +127,12 @@
 
         <!-- TAB 2: Аналитика -->
         <div id="tab-analytics" class="tab-view hidden">
-            <header class="fixed top-0 left-0 right-0 bg-darker dark:bg-stone-100 z-40 border-b border-stone-800 dark:border-stone-300">
+            <header class="fixed top-0 left-0 right-0 bg-darker dark:bg-stone-100 z-50 border-b border-stone-800 dark:border-stone-300">
                 <div class="p-4">
                     <h1 class="text-xl font-bold text-stone-100 dark:text-stone-900">📊 Аналитика</h1>
                 </div>
             </header>
-            <main class="pt-20 pb-24 px-4 max-w-lg mx-auto">
+            <main class="pt-24 pb-28 px-4 max-w-lg mx-auto">
                 <!-- Tabs -->
                 <div class="flex gap-1 mb-4 bg-card dark:bg-stone-200 rounded-xl p-1">
                     <button class="analytics-tab-btn flex-1 py-2 rounded-lg text-stone-400 dark:text-stone-600 text-sm" data-tab="summary">Главная</button>
@@ -143,12 +148,12 @@
 
         <!-- TAB 3: Проекты -->
         <div id="tab-projects" class="tab-view hidden">
-            <header class="fixed top-0 left-0 right-0 bg-darker dark:bg-stone-100 z-40 border-b border-stone-800 dark:border-stone-300">
+            <header class="fixed top-0 left-0 right-0 bg-darker dark:bg-stone-100 z-50 border-b border-stone-800 dark:border-stone-300">
                 <div class="p-4">
                     <h1 class="text-xl font-bold text-stone-100 dark:text-stone-900">📁 Проекты</h1>
                 </div>
             </header>
-            <main class="pt-20 pb-24 px-4 max-w-lg mx-auto">
+            <main class="pt-24 pb-28 px-4 max-w-lg mx-auto">
                 <div id="projects-list" class="space-y-3">
                     <!-- Заполняется JS -->
                 </div>
@@ -162,12 +167,12 @@
 
         <!-- TAB 4: Настройки -->
         <div id="tab-settings" class="tab-view hidden">
-            <header class="fixed top-0 left-0 right-0 bg-darker dark:bg-stone-100 z-40 border-b border-stone-800 dark:border-stone-300">
+            <header class="fixed top-0 left-0 right-0 bg-darker dark:bg-stone-100 z-50 border-b border-stone-800 dark:border-stone-300">
                 <div class="p-4">
                     <h1 class="text-xl font-bold text-stone-100 dark:text-stone-900">⚙️ Настройки</h1>
                 </div>
             </header>
-            <main class="pt-20 pb-24 px-4 max-w-lg mx-auto space-y-4">
+            <main class="pt-24 pb-28 px-4 max-w-lg mx-auto space-y-4">
                 <div class="bg-card dark:bg-white rounded-xl overflow-hidden">
                     <div class="px-4 py-3 border-b border-stone-800 dark:border-stone-200">
                         <h3 class="text-sm font-semibold text-stone-500 dark:text-stone-400 uppercase">Интерфейс</h3>
@@ -222,7 +227,7 @@
     </div>
 
     <!-- Bottom Tab Bar -->
-    <nav id="bottom-tabs" class="fixed bottom-0 left-0 right-0 bg-darker/95 dark:bg-stone-100/95 backdrop-blur-sm border-t border-stone-800 dark:border-stone-300 z-40 pb-[env(safe-area-inset-bottom)]">
+    <nav id="bottom-tabs" class="fixed bottom-0 left-0 right-0 bg-darker/95 dark:bg-stone-100/95 backdrop-blur-sm border-t border-stone-800 dark:border-stone-300 z-[60] pb-[env(safe-area-inset-bottom)]">
         <div class="flex items-center justify-around h-16">
             <button class="tab-btn active flex flex-col items-center justify-center w-full h-full text-primary" data-tab="memories">
                 <span class="text-xl mb-0.5 tab-icon transition-transform">📝</span>
@@ -244,7 +249,7 @@
     </nav>
 
     <!-- Add FAB -->
-    <button id="add-btn" class="fixed right-6 w-14 h-14 bg-gradient-to-r from-primary to-secondary rounded-full shadow-xl shadow-orange-500/30 flex items-center justify-center text-2xl text-white hover:scale-110 active:scale-95 transition-transform z-30" style="bottom: 5rem;">
+    <button id="add-btn" class="fixed right-6 w-14 h-14 bg-gradient-to-r from-primary to-secondary rounded-full shadow-xl shadow-orange-500/30 flex items-center justify-center text-2xl text-white hover:scale-110 active:scale-95 transition-transform z-[55]" style="bottom: 5rem;">
         +
     </button>
 

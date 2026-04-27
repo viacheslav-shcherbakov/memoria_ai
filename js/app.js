@@ -118,7 +118,8 @@ const App = {
         container.querySelectorAll('.project-pill[data-project]').forEach(pill => {
             pill.addEventListener('click', () => {
                 const projectId = pill.dataset.project;
-                this.currentProjectId = projectId || null;
+                // Пустая строка означает "все записи" → null
+                this.currentProjectId = projectId === '' ? null : projectId;
                 this.renderProjectPills();
                 this.filter();
             });
@@ -267,11 +268,15 @@ const App = {
     filter() {
         let filtered = this.memories;
 
-        if (this.currentProjectId === 'none' || this.currentProjectId === '') {
+        // Если currentProjectId === null или '' — показываем все записи
+        // Если currentProjectId === 'none' — показываем записи без проекта
+        // Иначе фильтруем по выбранному проекту
+        if (this.currentProjectId === 'none') {
             filtered = filtered.filter(m => !m.projectId);
         } else if (this.currentProjectId) {
             filtered = filtered.filter(m => m.projectId === this.currentProjectId);
         }
+        // Если currentProjectId === null или '', фильтр не применяем — все записи
 
         if (this.currentQuery) {
             filtered = SearchEngine.search(filtered, this.currentQuery);
@@ -792,21 +797,25 @@ const App = {
 
     toggleTheme() {
         const html = document.documentElement;
+        const body = document.body;
         const isDark = html.classList.contains('dark');
         
         if (isDark) {
+            // Переключаем со светлой на тёмную
             html.classList.remove('dark');
-            document.body.classList.remove('bg-stone-50', 'text-stone-900');
-            document.body.classList.add('bg-darker', 'text-gray-100');
+            body.classList.remove('bg-stone-50', 'text-stone-900');
+            body.classList.add('bg-darker', 'text-gray-100');
         } else {
+            // Переключаем с тёмной на светлую
             html.classList.add('dark');
-            document.body.classList.remove('bg-darker', 'text-gray-100');
-            document.body.classList.add('bg-stone-50', 'text-stone-900');
+            body.classList.remove('bg-darker', 'text-gray-100');
+            body.classList.add('bg-stone-50', 'text-stone-900');
         }
         
+        // Сохраняем состояние: true = тёмная, false = светлая
         localStorage.setItem('memoria-dark-mode', !html.classList.contains('dark'));
 
-        // Update the theme toggle button emoji
+        // Обновляем иконку кнопки переключения темы
         const toggleBtn = document.getElementById('theme-toggle');
         if (toggleBtn) {
             toggleBtn.textContent = html.classList.contains('dark') ? '🌙' : '☀️';
@@ -815,22 +824,36 @@ const App = {
 
     initTheme() {
         const saved = localStorage.getItem('memoria-dark-mode');
+        // saved === null → не задано → используем тёмную тему (по умолчанию)
+        // saved === 'true' → тёмная тема
+        // saved === 'false' → светлая тема
         const isDark = saved === null ? true : saved === 'true';
         
         const html = document.documentElement;
+        const body = document.body;
+        
         if (isDark) {
+            // Тёмная тема: убираем класс dark, ставим тёмные цвета
             html.classList.remove('dark');
-            document.body.classList.remove('bg-stone-50', 'text-stone-900');
-            document.body.classList.add('bg-darker', 'text-gray-100');
+            body.classList.remove('bg-stone-50', 'text-stone-900');
+            body.classList.add('bg-darker', 'text-gray-100');
         } else {
+            // Светлая тема: добавляем класс dark для Tailwind, ставим светлые цвета
             html.classList.add('dark');
-            document.body.classList.remove('bg-darker', 'text-gray-100');
-            document.body.classList.add('bg-stone-50', 'text-stone-900');
+            body.classList.remove('bg-darker', 'text-gray-100');
+            body.classList.add('bg-stone-50', 'text-stone-900');
         }
 
+        // Обновляем иконку кнопки переключения темы
         const toggleBtn = document.getElementById('theme-toggle');
         if (toggleBtn) {
             toggleBtn.textContent = isDark ? '🌙' : '☀️';
+        }
+        
+        // Синхронизируем чекбокс в настройках
+        const darkToggle = document.getElementById('dark-mode-toggle');
+        if (darkToggle) {
+            darkToggle.checked = isDark;
         }
     },
 
