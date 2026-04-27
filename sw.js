@@ -17,13 +17,6 @@ const ASSETS = [
     '/js/onboarding.js',
     '/manifest.json'
 ];
-    '/js/ui-reports.js',
-    '/js/notification-service.js',
-    '/js/notification-settings.js',
-    '/js/app.js',
-    '/js/onboarding.js',
-    '/manifest.json'
-];
 
 self.addEventListener('install', (event) => {
     event.waitUntil(
