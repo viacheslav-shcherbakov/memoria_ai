@@ -28,6 +28,16 @@
         }
     </script>
     <link rel="stylesheet" href="css/styles.css">
+    <script>
+        // Apply theme immediately to prevent flash
+        (function() {
+            const saved = localStorage.getItem('memoria-dark-mode');
+            const isDark = saved === null ? true : saved === 'true';
+            if (!isDark) {
+                document.documentElement.classList.add('dark');
+            }
+        })();
+    </script>
 </head>
 <body class="bg-darker text-gray-100 min-h-screen">
     <!-- Onboarding -->
@@ -120,6 +130,7 @@
             <main class="pt-20 pb-24 px-4 max-w-lg mx-auto">
                 <!-- Tabs -->
                 <div class="flex gap-1 mb-4 bg-card dark:bg-stone-200 rounded-xl p-1">
+                    <button class="analytics-tab-btn flex-1 py-2 rounded-lg text-stone-400 dark:text-stone-600 text-sm" data-tab="summary">Главная</button>
                     <button class="analytics-tab-btn flex-1 py-2 rounded-lg bg-primary text-white text-sm font-medium" data-tab="moods">Настроения</button>
                     <button class="analytics-tab-btn flex-1 py-2 rounded-lg text-stone-400 dark:text-stone-600 text-sm" data-tab="tags">Теги</button>
                     <button class="analytics-tab-btn flex-1 py-2 rounded-lg text-stone-400 dark:text-stone-600 text-sm" data-tab="insights">Инсайты</button>

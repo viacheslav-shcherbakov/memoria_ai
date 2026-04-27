@@ -15,6 +15,7 @@ const App = {
         await this.loadMemories();
         await this.loadProjects();
 
+        this.initTheme();
         this.setupTabs();
         this.setupEventListeners();
         this.setupPWA();
@@ -24,6 +25,7 @@ const App = {
         this.setupSettings();
 
         TagsManager.load(this.memories);
+        this.currentProjectId = null; // По умолчанию показываем все записи
         this.filter();
         
         // Init swipe gestures after DOM is ready
@@ -422,13 +424,6 @@ const App = {
     setupAnalytics() {
         document.querySelectorAll('.analytics-tab-btn').forEach(btn => {
             btn.addEventListener('click', () => {
-                document.querySelectorAll('.analytics-tab-btn').forEach(b => {
-                    b.classList.remove('bg-primary', 'text-white');
-                    b.classList.add('text-stone-400', 'dark:text-stone-600');
-                });
-                btn.classList.remove('text-stone-400', 'dark:text-stone-600');
-                btn.classList.add('bg-primary', 'text-white');
-
                 const tab = btn.dataset.tab;
                 this.renderAnalyticsContent(tab);
             });
@@ -436,19 +431,129 @@ const App = {
     },
 
     renderAnalyticsTab() {
-        this.renderAnalyticsContent('moods');
+        this.renderAnalyticsContent('summary');
     },
 
     async renderAnalyticsContent(tab) {
         const container = document.getElementById('analytics-content');
         if (!container) return;
-        container.innerHTML = '<p class="text-stone-500 text-center py-8">Загрузка...</p>';
+        container.innerHTML = '<p class="text-stone-500 dark:text-stone-400 text-center py-8">Загрузка...</p>';
+
+        // Обновляем активную кнопку
+        document.querySelectorAll('.analytics-tab-btn').forEach(btn => {
+            if (btn.dataset.tab === tab) {
+                btn.classList.add('bg-primary', 'text-white');
+                btn.classList.remove('text-stone-400', 'dark:text-stone-600');
+            } else {
+                btn.classList.remove('bg-primary', 'text-white');
+                btn.classList.add('text-stone-400', 'dark:text-stone-600');
+            }
+        });
 
         switch (tab) {
+            case 'summary': this.renderSummaryStats(container); break;
             case 'moods': this.renderMoodAnalytics(container); break;
             case 'tags': this.renderTagAnalytics(container); break;
             case 'insights': this.renderInsightsContent(container); break;
         }
+    },
+
+    async renderSummaryStats(container) {
+        const totalMemories = this.memories.length;
+        const totalProjects = this.projects.length;
+        
+        // Подсчет записей за последние 7 дней
+        const weekAgo = Date.now() - (7 * 86400000);
+        const weekCount = this.memories.filter(m => m.createdAt >= weekAgo).length;
+        
+        // Подсчет серий (дней подряд с записями)
+        let streak = 0;
+        const today = new Date().toISOString().split('T')[0];
+        const dates = [...new Set(this.memories.map(m => m.date))].sort().reverse();
+        for (let i = 0; i < dates.length; i++) {
+            const expectedDate = new Date();
+            expectedDate.setDate(expectedDate.getDate() - i);
+            const expectedStr = expectedDate.toISOString().split('T')[0];
+            if (dates.includes(expectedStr)) {
+                streak++;
+            } else if (i > 0) {
+                break;
+            }
+        }
+        
+        // Топ тегов
+        const tagCounts = {};
+        this.memories.forEach(m => {
+            [...(m.tags || []), ...(m.aiTags || [])].forEach(t => {
+                tagCounts[t] = (tagCounts[t] || 0) + 1;
+            });
+        });
+        const topTags = Object.entries(tagCounts).sort((a, b) => b[1] - a[1]).slice(0, 3);
+        
+        // Распределение настроений
+        const moodCounts = {};
+        this.memories.forEach(m => {
+            const mood = m.mood || 'routine';
+            moodCounts[mood] = (moodCounts[mood] || 0) + 1;
+        });
+        const topMood = Object.entries(moodCounts).sort((a, b) => b[1] - a[1])[0];
+        const topMoodInfo = topMood ? ProjectService.MOODS[topMood[0]] : ProjectService.MOODS.routine;
+
+        let html = `
+            <div class="space-y-4">
+                <!-- Основная статистика -->
+                <div class="grid grid-cols-2 gap-3">
+                    <div class="bg-gradient-to-br from-primary/20 to-secondary/20 rounded-xl p-4 text-center border border-primary/30">
+                        <p class="text-3xl font-bold text-primary">${totalMemories}</p>
+                        <p class="text-xs text-stone-400 dark:text-stone-500 mt-1">Всего записей</p>
+                    </div>
+                    <div class="bg-gradient-to-br from-blue-500/20 to-purple-500/20 rounded-xl p-4 text-center border border-blue-400/30">
+                        <p class="text-3xl font-bold text-blue-400">${totalProjects}</p>
+                        <p class="text-xs text-stone-400 dark:text-stone-500 mt-1">Проектов</p>
+                    </div>
+                </div>
+                
+                <!-- Серия и неделя -->
+                <div class="grid grid-cols-2 gap-3">
+                    <div class="bg-card dark:bg-white rounded-xl p-4 text-center">
+                        <p class="text-3xl font-bold text-orange-400">🔥 ${streak}</p>
+                        <p class="text-xs text-stone-400 dark:text-stone-500 mt-1">Дней подряд</p>
+                    </div>
+                    <div class="bg-card dark:bg-white rounded-xl p-4 text-center">
+                        <p class="text-3xl font-bold text-green-400">${weekCount}</p>
+                        <p class="text-xs text-stone-400 dark:text-stone-500 mt-1">За 7 дней</p>
+                    </div>
+                </div>
+                
+                <!-- Топ настроение -->
+                ${topMood ? `
+                <div class="bg-card dark:bg-white rounded-xl p-4">
+                    <div class="flex items-center gap-3">
+                        <span class="text-4xl">${topMoodInfo.emoji}</span>
+                        <div>
+                            <p class="text-sm text-stone-400 dark:text-stone-500">Чаще всего</p>
+                            <p class="font-semibold text-stone-100 dark:text-stone-900">${topMoodInfo.label}</p>
+                            <p class="text-xs text-stone-500 dark:text-stone-400">${topMood[1]} раз</p>
+                        </div>
+                    </div>
+                </div>
+                ` : ''}
+                
+                <!-- Топ теги -->
+                ${topTags.length > 0 ? `
+                <div class="bg-card dark:bg-white rounded-xl p-4">
+                    <p class="text-sm text-stone-400 dark:text-stone-500 mb-3">Популярные теги</p>
+                    <div class="flex flex-wrap gap-2">
+                        ${topTags.map(([tag, count]) => `
+                            <span class="tag text-sm">${tag} <span class="opacity-60">(${count})</span></span>
+                        `).join('')}
+                    </div>
+                </div>
+                ` : ''}
+            </div>
+        `;
+        
+        container.innerHTML = html;
     },
 
     async renderMoodAnalytics(container) {
@@ -677,24 +782,55 @@ const App = {
         if (darkToggle) darkToggle.checked = !document.documentElement.classList.contains('dark');
         const aiToggle = document.getElementById('ai-toggle');
         if (aiToggle) aiToggle.checked = AIService.isEnabled !== false;
+        
+        // Update theme toggle button emoji
+        const toggleBtn = document.getElementById('theme-toggle');
+        if (toggleBtn) {
+            toggleBtn.textContent = document.documentElement.classList.contains('dark') ? '🌙' : '☀️';
+        }
     },
 
     toggleTheme() {
-        const isDark = document.documentElement.classList.toggle('dark');
-        // false = light mode, true = was dark
-        if (!isDark) {
-            document.documentElement.classList.add('dark');
-            // was light, now dark
+        const html = document.documentElement;
+        const isDark = html.classList.contains('dark');
+        
+        if (isDark) {
+            html.classList.remove('dark');
+            document.body.classList.remove('bg-stone-50', 'text-stone-900');
+            document.body.classList.add('bg-darker', 'text-gray-100');
         } else {
-            document.documentElement.classList.remove('dark');
-            // was dark, now light
+            html.classList.add('dark');
+            document.body.classList.remove('bg-darker', 'text-gray-100');
+            document.body.classList.add('bg-stone-50', 'text-stone-900');
         }
-        localStorage.setItem('memoria-dark-mode', !document.documentElement.classList.contains('dark'));
+        
+        localStorage.setItem('memoria-dark-mode', !html.classList.contains('dark'));
 
         // Update the theme toggle button emoji
         const toggleBtn = document.getElementById('theme-toggle');
         if (toggleBtn) {
-            toggleBtn.textContent = document.documentElement.classList.contains('dark') ? '🌙' : '☀️';
+            toggleBtn.textContent = html.classList.contains('dark') ? '🌙' : '☀️';
+        }
+    },
+
+    initTheme() {
+        const saved = localStorage.getItem('memoria-dark-mode');
+        const isDark = saved === null ? true : saved === 'true';
+        
+        const html = document.documentElement;
+        if (isDark) {
+            html.classList.remove('dark');
+            document.body.classList.remove('bg-stone-50', 'text-stone-900');
+            document.body.classList.add('bg-darker', 'text-gray-100');
+        } else {
+            html.classList.add('dark');
+            document.body.classList.remove('bg-darker', 'text-gray-100');
+            document.body.classList.add('bg-stone-50', 'text-stone-900');
+        }
+
+        const toggleBtn = document.getElementById('theme-toggle');
+        if (toggleBtn) {
+            toggleBtn.textContent = isDark ? '🌙' : '☀️';
         }
     },
 
