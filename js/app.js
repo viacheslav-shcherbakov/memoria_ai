@@ -16,7 +16,6 @@ const App = {
         await this.loadProjects();
 
         this.setupTabs();
-        this.setupProjectPills();
         this.setupEventListeners();
         this.setupPWA();
         this.setupAI();

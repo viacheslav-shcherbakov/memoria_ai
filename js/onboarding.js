@@ -37,7 +37,9 @@ const Onboarding = {
     
     showOnboarding() {
         document.getElementById('onboarding').classList.remove('hidden');
-        document.getElementById('app').classList.add('opacity-0');
+        // Скрываем tab-views вместо несуществующего #app
+        const tabViews = document.getElementById('tab-views');
+        if (tabViews) tabViews.classList.add('opacity-0');
     },
     
     showApp() {
