@@ -36,11 +36,18 @@
             // saved === 'true' → тёмная тема
             // saved === 'false' → светлая тема
             const isDark = saved === null ? true : saved === 'true';
-            if (!isDark) {
+            
+            if (isDark) {
+                // Тёмная тема: не добавляем класс dark (Tailwind использует dark: префикс для светлой темы в нашей конфигурации)
+                document.documentElement.classList.remove('dark');
+                document.body.classList.remove('bg-stone-50', 'text-stone-900');
+                document.body.classList.add('bg-darker', 'text-gray-100');
+            } else {
                 // Светлая тема: добавляем класс dark для Tailwind
                 document.documentElement.classList.add('dark');
+                document.body.classList.remove('bg-darker', 'text-gray-100');
+                document.body.classList.add('bg-stone-50', 'text-stone-900');
             }
-            // Тёмная тема: класс dark не добавляем
         })();
     </script>
 </head>

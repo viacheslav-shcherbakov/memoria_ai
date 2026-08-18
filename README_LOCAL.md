@@ -2,27 +2,27 @@
 
 ## Plan for Bug Fixes
 
-The following issues have been identified and will be fixed:
+### ✅ Completed Fixes
+- [x] UI Elements Overlapping (z-index, padding adjustments)
 
-### 1. Dark/Light Mode Toggle Not Working
+### 🔴 Critical Issues (In Progress)
+#### 1. Dark/Light Mode Toggle Not Working
 - **Issue**: Theme toggle button and settings checkbox are not synchronizing properly
 - **Root Cause**: Logic inversion in `initTheme()` and `toggleTheme()` methods
 - **Fix**: Correct the theme state logic and ensure both toggles update consistently
+- **Status**: PENDING VERIFICATION
 
-### 2. UI Elements Overlapping
-- **Issue**: Header, tabs, and content areas overlap on some screens
-- **Root Cause**: Incorrect padding/margin values and z-index conflicts
-- **Fix**: Adjust header height, main content padding, and fix z-index hierarchy
-
-### 3. Notes Not Displaying on Page Load
+#### 2. Notes Not Displaying on Page Load
 - **Issue**: Notes only appear after clicking a project pill or "All" button
 - **Root Cause**: `currentProjectId` initialization and filter logic mismatch
 - **Fix**: Ensure `filter()` is called correctly after data load with proper default state
+- **Status**: PENDING VERIFICATION
 
-### 4. Missing User Statistics Button/Section
-- **Issue**: No visible way to access user statistics
-- **Root Cause**: Analytics tab exists but may not be properly linked or visible
-- **Fix**: Verify analytics tab visibility and add a statistics summary card if needed
+#### 3. Missing User Statistics & Analytics
+- **Issue**: No visible statistics, no tag cloud, analytics tab empty
+- **Root Cause**: Analytics functions not implemented or not rendering data
+- **Fix**: Implement stats calculation, mood distribution, tag cloud generation
+- **Status**: PENDING IMPLEMENTATION
 
 ---
 

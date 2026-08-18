@@ -739,15 +739,15 @@ const App = {
         // Dark mode toggle
         const darkToggle = document.getElementById('dark-mode-toggle');
         if (darkToggle) {
-            darkToggle.checked = !document.documentElement.classList.contains('dark');
+            // checked=true означает тёмная тема включена
+            const isDark = !document.documentElement.classList.contains('dark');
+            darkToggle.checked = isDark;
             darkToggle.addEventListener('change', () => this.toggleTheme());
         }
 
         // Theme toggle button in header
         document.getElementById('theme-toggle')?.addEventListener('click', () => {
             this.toggleTheme();
-            const toggle = document.getElementById('dark-mode-toggle');
-            if (toggle) toggle.checked = !document.documentElement.classList.contains('dark');
         });
 
         // AI toggle
@@ -801,30 +801,35 @@ const App = {
         const isDark = html.classList.contains('dark');
         
         if (isDark) {
-            // Переключаем со светлой на тёмную
+            // Сейчас светлая тема (класс dark есть), переключаем на тёмную
             html.classList.remove('dark');
             body.classList.remove('bg-stone-50', 'text-stone-900');
             body.classList.add('bg-darker', 'text-gray-100');
+            localStorage.setItem('memoria-dark-mode', 'true');
         } else {
-            // Переключаем с тёмной на светлую
+            // Сейчас тёмная тема (класса dark нет), переключаем на светлую
             html.classList.add('dark');
             body.classList.remove('bg-darker', 'text-gray-100');
             body.classList.add('bg-stone-50', 'text-stone-900');
+            localStorage.setItem('memoria-dark-mode', 'false');
         }
-        
-        // Сохраняем состояние: true = тёмная, false = светлая
-        localStorage.setItem('memoria-dark-mode', !html.classList.contains('dark'));
 
         // Обновляем иконку кнопки переключения темы
         const toggleBtn = document.getElementById('theme-toggle');
         if (toggleBtn) {
-            toggleBtn.textContent = html.classList.contains('dark') ? '🌙' : '☀️';
+            toggleBtn.textContent = html.classList.contains('dark') ? '☀️' : '🌙';
+        }
+        
+        // Синхронизируем чекбокс в настройках
+        const darkToggle = document.getElementById('dark-mode-toggle');
+        if (darkToggle) {
+            darkToggle.checked = !html.classList.contains('dark');
         }
     },
 
     initTheme() {
         const saved = localStorage.getItem('memoria-dark-mode');
-        // saved === null → не задано → используем тёмную тему (по умолчанию)
+        // saved === null → не задано → тёмная тема (по умолчанию)
         // saved === 'true' → тёмная тема
         // saved === 'false' → светлая тема
         const isDark = saved === null ? true : saved === 'true';
@@ -833,12 +838,12 @@ const App = {
         const body = document.body;
         
         if (isDark) {
-            // Тёмная тема: убираем класс dark, ставим тёмные цвета
+            // Тёмная тема: не добавляем класс dark
             html.classList.remove('dark');
             body.classList.remove('bg-stone-50', 'text-stone-900');
             body.classList.add('bg-darker', 'text-gray-100');
         } else {
-            // Светлая тема: добавляем класс dark для Tailwind, ставим светлые цвета
+            // Светлая тема: добавляем класс dark для Tailwind
             html.classList.add('dark');
             body.classList.remove('bg-darker', 'text-gray-100');
             body.classList.add('bg-stone-50', 'text-stone-900');
