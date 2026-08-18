@@ -33,8 +33,8 @@
         (function() {
             const saved = localStorage.getItem('memoria-dark-mode');
             // saved === null → не задано → тёмная тема (по умолчанию)
-            // saved === 'true' → тёмная тема
-            // saved === 'false' → светлая тема
+            // saved === 'true' → тёмная тема (класс dark НЕ добавляем)
+            // saved === 'false' → светлая тема (класс dark добавляем)
             const isDark = saved === null ? true : saved === 'true';
             
             if (isDark) {
@@ -47,6 +47,11 @@
                 document.documentElement.classList.add('dark');
                 document.body.classList.remove('bg-darker', 'text-gray-100');
                 document.body.classList.add('bg-stone-50', 'text-stone-900');
+            } else {
+                // Тёмная тема: класс dark не добавляем, используем bg-darker
+                document.documentElement.classList.remove('dark');
+                document.body.classList.remove('bg-stone-50', 'text-stone-900');
+                document.body.classList.add('bg-darker', 'text-gray-100');
             }
         })();
     </script>
