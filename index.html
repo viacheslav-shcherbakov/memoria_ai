@@ -38,7 +38,7 @@
             const isDark = saved === null ? true : saved === 'true';
             
             if (isDark) {
-                // Тёмная тема: не добавляем класс dark (Tailwind использует dark: префикс для светлой темы в нашей конфигурации)
+                // Тёмная тема: не добавляем класс dark
                 document.documentElement.classList.remove('dark');
                 document.body.classList.remove('bg-stone-50', 'text-stone-900');
                 document.body.classList.add('bg-darker', 'text-gray-100');
