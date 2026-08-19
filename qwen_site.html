@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="ru" class="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Memoria — Личная память</title>
+<meta name="description" content="Личная память — храни воспоминания">
+<meta name="theme-color" content="#ea580c">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+tailwind.config = {
+  darkMode: 'class',
+  theme: {
+    extend: {
+      colors: {
+        accent: { DEFAULT: '#ea580c', light: '#f97316', dark: '#c2410c' }
+      }
+    }
+  }
+}
+</script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+
+* { -webkit-tap-highlight-color: transparent; box-sizing: border-box; }
+body { font-family: 'Inter', system-ui, sans-serif; overscroll-behavior: none; }
+
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #57534e; border-radius: 4px; }
+
+@keyframes slideUp { from { transform: translateY(100%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+@keyframes slideDown { from { transform: translateY(-20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes scaleIn { from { transform: scale(0.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+@keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.05); } }
+@keyframes shimmer { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }
+@keyframes barGrow { from { height: 0; } }
+@keyframes countUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+.animate-slide-up { animation: slideUp 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+.animate-slide-down { animation: slideDown 0.3s ease-out forwards; }
+.animate-fade-in { animation: fadeIn 0.25s ease-out forwards; }
+.animate-scale-in { animation: scaleIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+
+.card-swipe-container { overflow: hidden; position: relative; }
+.card-swipe-back { position: absolute; inset: 0; display: flex; align-items: center; justify-content: space-between; padding: 0 20px; border-radius: inherit; z-index: 0; }
+.card-swipe-back .swipe-left { background: #dc2626; color: white; padding: 12px 20px; border-radius: 12px; }
+.card-swipe-back .swipe-right { background: #2563eb; color: white; padding: 12px 20px; border-radius: 12px; }
+.card-swipe-front { position: relative; z-index: 1; transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1); will-change: transform; }
+.card-swipe-front.swiping { transition: none; }
+
+.bottom-sheet { position: fixed; bottom: 0; left: 0; right: 0; z-index: 100; max-height: 92vh; border-radius: 20px 20px 0 0; transform: translateY(100%); transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
+.bottom-sheet.open { transform: translateY(0); }
+.bottom-sheet-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 99; opacity: 0; transition: opacity 0.3s; pointer-events: none; }
+.bottom-sheet-overlay.open { opacity: 1; pointer-events: auto; }
+.drag-handle { width: 40px; height: 4px; background: #57534e; border-radius: 2px; margin: 12px auto; }
+
+.tag-pill { display: inline-flex; align-items: center; gap: 4px; padding: 4px 10px; border-radius: 999px; font-size: 12px; font-weight: 500; transition: all 0.2s; cursor: pointer; white-space: nowrap; }
+.tag-pill:hover { transform: scale(1.05); }
+
+.mood-btn { width: 44px; height: 44px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 22px; transition: all 0.2s; border: 2px solid transparent; }
+.mood-btn:hover { transform: scale(1.1); }
+.mood-btn.selected { border-color: #ea580c; background: rgba(234, 88, 12, 0.15); transform: scale(1.1); }
+
+.fab { position: fixed; bottom: 80px; right: 20px; width: 56px; height: 56px; border-radius: 16px; background: #ea580c; color: white; font-size: 28px; display: flex; align-items: center; justify-content: center; box-shadow: 0 8px 24px rgba(234, 88, 12, 0.4); z-index: 50; transition: all 0.3s; cursor: pointer; border: none; }
+.fab:hover { transform: scale(1.1) rotate(90deg); box-shadow: 0 12px 32px rgba(234, 88, 12, 0.5); }
+.fab:active { transform: scale(0.95); }
+
+.tab-bar { position: fixed; bottom: 0; left: 0; right: 0; z-index: 40; backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); }
+.tab-item { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 8px 0; transition: all 0.2s; cursor: pointer; }
+.tab-item.active { color: #ea580c; }
+.tab-item.active .tab-icon { transform: scale(1.15); }
+.tab-icon { font-size: 22px; transition: transform 0.2s; }
+.tab-label { font-size: 10px; font-weight: 500; }
+
+.toast { position: fixed; top: 20px; left: 50%; transform: translateX(-50%) translateY(-100px); z-index: 200; padding: 12px 24px; border-radius: 12px; font-size: 14px; font-weight: 500; transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1); white-space: nowrap; }
+.toast.show { transform: translateX(-50%) translateY(0); }
+
+.empty-state { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 60px 20px; text-align: center; }
+
+/* Markdown preview styles */
+.md-preview h1 { font-size: 1.5em; font-weight: 700; margin: 0.5em 0 0.3em; }
+.md-preview h2 { font-size: 1.25em; font-weight: 600; margin: 0.5em 0 0.3em; }
+.md-preview h3 { font-size: 1.1em; font-weight: 600; margin: 0.4em 0 0.2em; }
+.md-preview p { margin: 0.3em 0; }
+.md-preview ul, .md-preview ol { padding-left: 1.5em; margin: 0.3em 0; }
+.md-preview li { margin: 0.2em 0; }
+.md-preview blockquote { border-left: 3px solid #ea580c; padding-left: 12px; margin: 0.5em 0; color: #78716c; font-style: italic; }
+.md-preview code { font-family: 'JetBrains Mono', monospace; background: rgba(234, 88, 12, 0.1); padding: 2px 6px; border-radius: 4px; font-size: 0.9em; }
+.md-preview pre { background: rgba(0,0,0,0.3); padding: 12px; border-radius: 8px; overflow-x: auto; margin: 0.5em 0; }
+.md-preview pre code { background: none; padding: 0; }
+.md-preview hr { border: none; border-top: 1px solid #57534e; margin: 1em 0; }
+.md-preview .task-item { display: flex; align-items: center; gap: 8px; list-style: none; margin-left: -1.5em; }
+.md-preview .task-item input[type="checkbox"] { width: 18px; height: 18px; accent-color: #ea580c; }
+.md-preview .task-done { text-decoration: line-through; opacity: 0.5; }
+.md-preview strong { font-weight: 700; }
+.md-preview em { font-style: italic; }
+.md-preview a { color: #ea580c; text-decoration: underline; }
+
+/* Markdown textarea */
+.md-textarea {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px;
+  line-height: 1.7;
+  resize: none;
+  outline: none;
+  border: none;
+  background: transparent;
+  color: inherit;
+  width: 100%;
+  min-height: 200px;
+}
+.md-textarea::placeholder { color: #78716c; }
+
+/* Template cards */
+.template-card {
+  background: white;
+  border: 2px solid transparent;
+  border-radius: 16px;
+  padding: 16px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.template-card:hover { border-color: #ea580c; transform: translateY(-2px); }
+.template-card.selected { border-color: #ea580c; background: rgba(234, 88, 12, 0.05); }
+.dark .template-card { background: #292524; }
+.dark .template-card:hover { border-color: #ea580c; }
+
+/* Analytics chart bars */
+.analytics-bar { animation: barGrow 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+.analytics-count { animation: countUp 0.5s ease-out forwards; }
+
+/* Markdown hint */
+.md-hint { position: absolute; bottom: 8px; right: 12px; font-size: 10px; color: #78716c; pointer-events: none; }
+
+/* Tab toggle animation */
+.tab-indicator {
+  position: absolute;
+  bottom: 0;
+  height: 3px;
+  background: #ea580c;
+  border-radius: 3px 3px 0 0;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@media (min-width: 768px) {
+  .tab-bar { max-width: 600px; left: 50%; transform: translateX(-50%); border-radius: 16px 16px 0 0; }
+  .fab { right: calc(50% - 260px); }
+  .main-content { max-width: 600px; margin: 0 auto; }
+  .bottom-sheet { max-width: 600px; left: 50%; transform: translateX(-50%) translateY(100%); }
+  .bottom-sheet.open { transform: translateX(-50%) translateY(0); }
+}
+
+@supports (padding-bottom: env(safe-area-inset-bottom)) {
+  .tab-bar { padding-bottom: env(safe-area-inset-bottom); }
+  .fab { bottom: calc(80px + env(safe-area-inset-bottom)); }
+}
+</style>
+</head>
+<body class="bg-stone-100 dark:bg-stone-900 text-stone-900 dark:text-stone-100 min-h-screen transition-colors duration-300">
+
+<div id="toast" class="toast bg-stone-800 dark:bg-stone-200 text-stone-100 dark:text-stone-900 shadow-xl"></div>
+
+<!-- Onboarding -->
+<div id="onboarding" class="fixed inset-0 z-[200] bg-stone-900 hidden">
+  <div class="h-full flex flex-col">
+    <div class="flex-1 flex flex-col items-center justify-center px-8 text-center">
+      <div id="onb-step-0" class="onb-step animate-scale-in">
+        <div class="text-7xl mb-6">🧠</div>
+        <h1 class="text-3xl font-bold text-stone-100 mb-3">Добро пожаловать в Memoria</h1>
+        <p class="text-stone-400 text-lg">Ваш личный архив мыслей и проектов</p>
+      </div>
+      <div id="onb-step-1" class="onb-step hidden">
+        <div class="text-7xl mb-6">🤖</div>
+        <h1 class="text-3xl font-bold text-stone-100 mb-3">AI прямо в браузере</h1>
+        <p class="text-stone-400 text-lg">Автотеги и аналитика. Всё оффлайн.</p>
+      </div>
+      <div id="onb-step-2" class="onb-step hidden">
+        <div class="text-7xl mb-6">🔒</div>
+        <h1 class="text-3xl font-bold text-stone-100 mb-3">Ваши данные = только ваши</h1>
+        <p class="text-stone-400 text-lg">Никаких аккаунтов и облаков.</p>
+      </div>
+    </div>
+    <div class="flex items-center justify-between px-8 pb-12">
+      <button id="onb-prev" class="text-stone-400 font-medium px-6 py-3 hidden">Назад</button>
+      <div class="flex gap-2">
+        <span class="onb-dot w-2 h-2 rounded-full bg-orange-500 transition-all"></span>
+        <span class="onb-dot w-2 h-2 rounded-full bg-stone-600 transition-all"></span>
+        <span class="onb-dot w-2 h-2 rounded-full bg-stone-600 transition-all"></span>
+      </div>
+      <button id="onb-next" class="bg-orange-600 text-white font-medium px-6 py-3 rounded-xl">Далее</button>
+    </div>
+  </div>
+</div>
+
+<!-- Main App -->
+<div id="app" class="hidden">
+  <header class="sticky top-0 z-30 backdrop-blur-xl bg-stone-100/80 dark:bg-stone-900/80 border-b border-stone-200 dark:border-stone-800">
+    <div class="main-content px-4 py-3">
+      <div class="flex items-center justify-between mb-3">
+        <div class="flex items-center gap-2">
+          <span class="text-2xl">🧠</span>
+          <h1 class="text-xl font-bold">Memoria</h1>
+        </div>
+        <button id="theme-toggle" class="w-9 h-9 rounded-xl flex items-center justify-center bg-stone-200 dark:bg-stone-800 transition-all hover:scale-105">🌙</button>
+      </div>
+      <div class="relative">
+        <input id="search-input" type="text" placeholder="Поиск по записям..." class="w-full bg-stone-200 dark:bg-stone-800 rounded-xl px-4 py-2.5 pl-10 text-sm outline-none focus:ring-2 ring-orange-500/50 transition-all placeholder:text-stone-400">
+        <span class="absolute left-3 top-1/2 -translate-y-1/2 text-stone-400">🔍</span>
+        <button id="search-clear" class="absolute right-3 top-1/2 -translate-y-1/2 text-stone-400 hidden hover:text-stone-600">✕</button>
+      </div>
+      <div id="tag-filter-bar" class="flex gap-2 mt-2 overflow-x-auto pb-1 scrollbar-hide"></div>
+    </div>
+  </header>
+
+  <main class="main-content pb-24">
+    <div id="tab-notes" class="tab-content px-4 pt-4">
+      <div id="notes-list" class="space-y-3"></div>
+      <div id="empty-notes" class="empty-state hidden">
+        <div class="text-6xl mb-4">📝</div>
+        <h2 class="text-xl font-semibold mb-2">Пока пусто</h2>
+        <p class="text-stone-500 dark:text-stone-400 mb-6">Создайте первую запись</p>
+        <button onclick="openEditor()" class="bg-orange-600 text-white px-6 py-3 rounded-xl font-medium hover:bg-orange-500 transition-colors">Написать</button>
+      </div>
+    </div>
+
+    <div id="tab-analytics" class="tab-content px-4 pt-4 hidden">
+      <div id="analytics-content"></div>
+    </div>
+
+    <div id="tab-projects" class="tab-content px-4 pt-4 hidden">
+      <div class="flex items-center justify-between mb-4">
+        <div class="flex items-center gap-2">
+          <span class="text-xl">📁</span>
+          <h2 class="text-lg font-bold">Проекты</h2>
+        </div>
+        <button onclick="openProjectSheet()" class="bg-orange-600 text-white px-4 py-2 rounded-xl text-sm font-medium hover:bg-orange-500 transition-colors">+ Создать</button>
+      </div>
+      <div id="projects-list" class="space-y-3"></div>
+      <div id="empty-projects" class="empty-state hidden">
+        <div class="text-6xl mb-4">📁</div>
+        <h2 class="text-xl font-semibold mb-2">Нет проектов</h2>
+        <p class="text-stone-500 dark:text-stone-400">Создайте проект для группировки записей</p>
+      </div>
+    </div>
+
+    <div id="tab-settings" class="tab-content px-4 pt-4 hidden">
+      <div class="flex items-center gap-2 mb-6">
+        <span class="text-xl">⚙️</span>
+        <h2 class="text-lg font-bold">Настройки</h2>
+      </div>
+      <div class="space-y-6">
+        <section>
+          <h3 class="text-sm font-semibold text-stone-500 dark:text-stone-400 uppercase tracking-wider mb-3">Интерфейс</h3>
+          <div class="bg-white dark:bg-stone-800 rounded-2xl p-4 space-y-4">
+            <div class="flex items-center justify-between">
+              <span class="font-medium">🌙 Тёмная тема</span>
+              <label class="relative inline-flex items-center cursor-pointer">
+                <input id="settings-dark-toggle" type="checkbox" class="sr-only peer">
+                <div class="w-11 h-6 bg-stone-300 peer-checked:bg-orange-600 rounded-full peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all"></div>
+              </label>
+            </div>
+          </div>
+        </section>
+        <section>
+          <h3 class="text-sm font-semibold text-stone-500 dark:text-stone-400 uppercase tracking-wider mb-3">AI</h3>
+          <div class="bg-white dark:bg-stone-800 rounded-2xl p-4 space-y-4">
+            <div class="flex items-center justify-between">
+              <span class="font-medium">🤖 Авто-тегирование</span>
+              <label class="relative inline-flex items-center cursor-pointer">
+                <input id="settings-auto-tag" type="checkbox" checked class="sr-only peer">
+                <div class="w-11 h-6 bg-stone-300 peer-checked:bg-orange-600 rounded-full peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all"></div>
+              </label>
+            </div>
+            <button onclick="rebuildAICorpus()" class="w-full bg-stone-200 dark:bg-stone-700 px-4 py-2.5 rounded-xl text-sm font-medium hover:bg-stone-300 dark:hover:bg-stone-600 transition-colors">🔄 Обновить корпус AI</button>
+          </div>
+        </section>
+        <section>
+          <h3 class="text-sm font-semibold text-stone-500 dark:text-stone-400 uppercase tracking-wider mb-3">Данные</h3>
+          <div class="bg-white dark:bg-stone-800 rounded-2xl p-4 space-y-3">
+            <button onclick="exportData()" class="w-full bg-stone-200 dark:bg-stone-700 px-4 py-2.5 rounded-xl text-sm font-medium hover:bg-stone-300 dark:hover:bg-stone-600 transition-colors">📤 Экспорт данных</button>
+            <button onclick="document.getElementById('import-file').click()" class="w-full bg-stone-200 dark:bg-stone-700 px-4 py-2.5 rounded-xl text-sm font-medium hover:bg-stone-300 dark:hover:bg-stone-600 transition-colors">📥 Импорт данных</button>
+            <input id="import-file" type="file" accept=".json" class="hidden" onchange="importData(event)">
+            <button onclick="resetOnboarding()" class="w-full bg-stone-200 dark:bg-stone-700 px-4 py-2.5 rounded-xl text-sm font-medium hover:bg-stone-300 dark:hover:bg-stone-600 transition-colors">🗑️ Сбросить онбординг</button>
+          </div>
+        </section>
+        <div class="text-center text-xs text-stone-400 pb-8">
+          <p>Memoria v3.0</p>
+          <p>Личная память • Все данные локально 📱</p>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <button class="fab" onclick="openEditor()" aria-label="Новая запись">+</button>
+
+  <nav class="tab-bar bg-stone-100/90 dark:bg-stone-900/90 border-t border-stone-200 dark:border-stone-800">
+    <div class="main-content flex">
+      <div class="tab-item active" data-tab="notes">
+        <span class="tab-icon">📝</span>
+        <span class="tab-label">Записи</span>
+      </div>
+      <div class="tab-item" data-tab="analytics">
+        <span class="tab-icon">📊</span>
+        <span class="tab-label">Аналитика</span>
+      </div>
+      <div class="tab-item" data-tab="projects">
+        <span class="tab-icon">📁</span>
+        <span class="tab-label">Проекты</span>
+      </div>
+      <div class="tab-item" data-tab="settings">
+        <span class="tab-icon">⚙️</span>
+        <span class="tab-label">Настройки</span>
+      </div>
+    </div>
+  </nav>
+</div>
+
+<!-- Template Selector Sheet -->
+<div id="template-overlay" class="bottom-sheet-overlay" onclick="closeTemplateSheet()"></div>
+<div id="template-sheet" class="bottom-sheet bg-white dark:bg-stone-800">
+  <div class="drag-handle"></div>
+  <div class="px-4 pb-8 max-h-[85vh] overflow-y-auto">
+    <div class="flex items-center justify-between mb-4">
+      <h2 class="text-lg font-bold">Выберите шаблон</h2>
+      <button onclick="closeTemplateSheet()" class="w-8 h-8 rounded-lg bg-stone-200 dark:bg-stone-700 flex items-center justify-center">✕</button>
+    </div>
+    <div id="template-grid" class="grid grid-cols-2 gap-3 mb-4"></div>
+    <button onclick="closeTemplateSheet(); openEditorDirect()" class="w-full bg-stone-200 dark:bg-stone-700 px-4 py-3 rounded-xl font-medium text-stone-600 dark:text-stone-300">📝 Пустая запись</button>
+  </div>
+</div>
+
+<!-- Editor Bottom Sheet -->
+<div id="editor-overlay" class="bottom-sheet-overlay" onclick="closeEditor()"></div>
+<div id="editor-sheet" class="bottom-sheet bg-white dark:bg-stone-800 overflow-hidden">
+  <div class="drag-handle" id="editor-drag-handle"></div>
+  <div class="px-4 pb-8 max-h-[85vh] overflow-y-auto">
+    <div class="flex items-center justify-between mb-4">
+      <h2 id="editor-title" class="text-lg font-bold">Новая запись</h2>
+      <button onclick="closeEditor()" class="w-8 h-8 rounded-lg bg-stone-200 dark:bg-stone-700 flex items-center justify-center">✕</button>
+    </div>
+
+    <!-- View toggle -->
+    <div class="flex bg-stone-200 dark:bg-stone-700 rounded-xl p-1 mb-4">
+      <button id="view-edit" onclick="setEditorView('edit')" class="flex-1 py-2 rounded-lg text-sm font-medium transition-all bg-white dark:bg-stone-600 shadow-sm">✏️ Редактор</button>
+      <button id="view-preview" onclick="setEditorView('preview')" class="flex-1 py-2 rounded-lg text-sm font-medium transition-all text-stone-500">👁 Превью</button>
+    </div>
+
+    <!-- Mood -->
+    <div class="mb-4">
+      <label class="text-sm font-medium text-stone-500 dark:text-stone-400 mb-2 block">Настроение</label>
+      <div class="flex gap-2 flex-wrap">
+        <button class="mood-btn bg-stone-100 dark:bg-stone-700" data-mood="🐌" title="Рутина">🐌</button>
+        <button class="mood-btn bg-stone-100 dark:bg-stone-700" data-mood="🔥" title="Прорыв">🔥</button>
+        <button class="mood-btn bg-stone-100 dark:bg-stone-700" data-mood="🚧" title="Блокер">🚧</button>
+        <button class="mood-btn bg-stone-100 dark:bg-stone-700" data-mood="✅" title="Решено">✅</button>
+        <button class="mood-btn bg-stone-100 dark:bg-stone-700" data-mood="🔬" title="Поиск">🔬</button>
+        <button class="mood-btn bg-stone-100 dark:bg-stone-700" data-mood="🧪" title="Тест">🧪</button>
+        <button class="mood-btn bg-stone-100 dark:bg-stone-700" data-mood="💡" title="Идея">💡</button>
+        <button class="mood-btn bg-stone-100 dark:bg-stone-700" data-mood="😴" title="Усталость">😴</button>
+      </div>
+    </div>
+
+    <!-- Project pills -->
+    <div class="mb-4">
+      <label class="text-sm font-medium text-stone-500 dark:text-stone-400 mb-2 block">Проект</label>
+      <div id="editor-project-pills" class="flex gap-2 flex-wrap"></div>
+    </div>
+
+    <!-- Editor / Preview -->
+    <div class="relative">
+      <div id="editor-pane" class="bg-stone-50 dark:bg-stone-900/50 rounded-xl p-4 min-h-[200px]">
+        <textarea id="editor-textarea" class="md-textarea" placeholder="# Заголовок&#10;&#10;Начните писать с Markdown...&#10;&#10;**жирный** *курсив* - список&#10;[ ] задача > цитата `код`"></textarea>
+      </div>
+      <div id="preview-pane" class="bg-stone-50 dark:bg-stone-900/50 rounded-xl p-4 min-h-[200px] md-preview hidden"></div>
+      <span class="md-hint">Markdown поддерживается</span>
+    </div>
+
+    <!-- Tags -->
+    <div class="mt-3">
+      <label class="text-sm font-medium text-stone-500 dark:text-stone-400 mb-2 block">Теги</label>
+      <div id="editor-tags" class="flex gap-2 flex-wrap mb-2"></div>
+      <div class="flex gap-2">
+        <input id="editor-tag-input" type="text" placeholder="Добавить тег..." class="flex-1 bg-stone-100 dark:bg-stone-700 rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 ring-orange-500/30">
+        <button onclick="addEditorTag()" class="bg-orange-600 text-white px-3 py-2 rounded-lg text-sm font-medium hover:bg-orange-500">+</button>
+      </div>
+    </div>
+
+    <!-- AI suggestions -->
+    <div id="ai-suggestions" class="mt-3 hidden">
+      <label class="text-sm font-medium text-orange-500 mb-2 block">🤖 AI-теги</label>
+      <div id="ai-tag-suggestions" class="flex gap-2 flex-wrap"></div>
+    </div>
+
+    <!-- Word count -->
+    <div class="flex items-center justify-between mt-4 text-xs text-stone-400">
+      <span id="editor-word-count">0 слов</span>
+      <span id="editor-char-count">0 симв.</span>
+    </div>
+
+    <!-- Actions -->
+    <div class="flex gap-3 mt-4">
+      <button id="editor-delete" onclick="deleteCurrentNote()" class="flex-1 bg-red-500/10 text-red-500 px-4 py-3 rounded-xl font-medium hover:bg-red-500/20 transition-colors hidden">Удалить</button>
+      <button onclick="saveNote()" class="flex-[2] bg-orange-600 text-white px-4 py-3 rounded-xl font-medium hover:bg-orange-500 transition-colors">Сохранить</button>
+    </div>
+  </div>
+</div>
+
+<!-- Project Sheet -->
+<div id="project-overlay" class="bottom-sheet-overlay" onclick="closeProjectSheet()"></div>
+<div id="project-sheet" class="bottom-sheet bg-white dark:bg-stone-800">
+  <div class="drag-handle"></div>
+  <div class="px-4 pb-8">
+    <div class="flex items-center justify-between mb-4">
+      <h2 class="text-lg font-bold">Новый проект</h2>
+      <button onclick="closeProjectSheet()" class="w-8 h-8 rounded-lg bg-stone-200 dark:bg-stone-700 flex items-center justify-center">✕</button>
+    </div>
+    <input id="project-name-input" type="text" placeholder="Название проекта..." class="w-full bg-stone-100 dark:bg-stone-700 rounded-xl px-4 py-3 text-sm outline-none focus:ring-2 ring-orange-500/30 mb-4">
+    <div class="flex gap-3">
+      <button onclick="closeProjectSheet()" class="flex-1 bg-stone-200 dark:bg-stone-700 px-4 py-3 rounded-xl font-medium">Отмена</button>
+      <button onclick="createProject()" class="flex-1 bg-orange-600 text-white px-4 py-3 rounded-xl font-medium hover:bg-orange-500">Создать</button>
+    </div>
+  </div>
+</div>
+
+<!-- Note Detail Sheet -->
+<div id="detail-overlay" class="bottom-sheet-overlay" onclick="closeDetail()"></div>
+<div id="detail-sheet" class="bottom-sheet bg-white dark:bg-stone-800">
+  <div class="drag-handle"></div>
+  <div class="px-4 pb-8 max-h-[85vh] overflow-y-auto">
+    <div class="flex items-center justify-between mb-4">
+      <div class="flex items-center gap-2">
+        <span id="detail-mood" class="text-2xl"></span>
+        <span id="detail-date" class="text-sm text-stone-400"></span>
+      </div>
+      <button onclick="closeDetail()" class="w-8 h-8 rounded-lg bg-stone-200 dark:bg-stone-700 flex items-center justify-center">✕</button>
+    </div>
+    <div id="detail-project" class="text-xs text-orange-500 font-medium mb-3"></div>
+    <div id="detail-content" class="text-sm leading-relaxed mb-4 md-preview"></div>
+    <div id="detail-tags" class="flex gap-2 flex-wrap mb-4"></div>
+    <div id="detail-ai-summary" class="bg-orange-500/10 rounded-xl p-4 hidden">
+      <div class="text-xs text-orange-500 font-medium mb-1">🤖 AI-саммари</div>
+      <p id="detail-summary-text" class="text-sm text-stone-600 dark:text-stone-300"></p>
+    </div>
+    <div id="detail-sentiment" class="mt-3 hidden">
+      <div class="text-xs text-stone-400 mb-1">Настроение текста</div>
+      <div id="detail-sentiment-bar" class="h-2 rounded-full bg-stone-200 dark:bg-stone-700 overflow-hidden">
+        <div class="h-full rounded-full transition-all duration-500" style="width:50%"></div>
+      </div>
+    </div>
+    <div class="flex gap-3 mt-4">
+      <button onclick="editFromDetail()" class="flex-1 bg-orange-600 text-white px-4 py-3 rounded-xl font-medium hover:bg-orange-500">✏️ Редактировать</button>
+      <button onclick="deleteFromDetail()" class="flex-1 bg-red-500/10 text-red-500 px-4 py-3 rounded-xl font-medium hover:bg-red-500/20">🗑 Удалить</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ==================== Markdown Parser ====================
+function parseMarkdown(md) {
+  if (!md) return '';
+  let html = md;
+
+  // Escape HTML first (but preserve our markdown)
+  html = html.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+
+  // Code blocks (

@@ -1,0 +1,1326 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" id="theme-meta" content="#f5f0e8">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Заметки">
+<meta name="description" content="Ваши личные заметки">
+<title>Заметки</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=Lora:ital,wght@0,400;0,500;1,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+<style>
+/* ── TOKENS ─────────────────────────────────────────────────── */
+:root {
+  --paper:   #f5f0e8;
+  --paper2:  #ede7d6;
+  --paper3:  #e2d9c5;
+  --ink:     #1c1710;
+  --ink2:    #4a4233;
+  --ink3:    #8c7d65;
+  --accent:  #b85c2a;
+  --accent2: #e07b47;
+  --accent3: #fdf0e6;
+  --line:    rgba(28,23,16,.1);
+  --line2:   rgba(28,23,16,.06);
+  --shadow:  rgba(28,23,16,.12);
+  --shadowM: rgba(28,23,16,.22);
+  --red:     #c0392b;
+  --serif:   'Playfair Display', Georgia, serif;
+  --body:    'Lora', Georgia, serif;
+  --mono:    'JetBrains Mono', monospace;
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bot: env(safe-area-inset-bottom, 0px);
+}
+
+[data-theme="dark"] {
+  --paper:   #1a1812;
+  --paper2:  #221f16;
+  --paper3:  #2c2820;
+  --ink:     #f0e9d8;
+  --ink2:    #c4b89a;
+  --ink3:    #7a6e58;
+  --accent:  #e07b47;
+  --accent2: #f0a070;
+  --accent3: #2c1f14;
+  --line:    rgba(240,233,216,.08);
+  --line2:   rgba(240,233,216,.04);
+  --shadow:  rgba(0,0,0,.35);
+  --shadowM: rgba(0,0,0,.55);
+  #theme-meta { content: '#1a1812'; }
+}
+
+/* ── RESET ──────────────────────────────────────────────────── */
+*,*::before,*::after { box-sizing: border-box; margin:0; padding:0; -webkit-tap-highlight-color:transparent; }
+html,body { height:100%; overflow:hidden; }
+body {
+  font-family: var(--body);
+  background: var(--paper);
+  color: var(--ink);
+  overscroll-behavior: none;
+  -webkit-font-smoothing: antialiased;
+  transition: background .3s, color .3s;
+}
+
+/* ── LAYOUT ─────────────────────────────────────────────────── */
+.app { display:flex; flex-direction:column; height:100dvh; }
+
+/* ── TOPBAR ─────────────────────────────────────────────────── */
+.topbar {
+  flex-shrink: 0;
+  padding: calc(var(--safe-top) + 10px) 18px 0;
+  background: var(--paper);
+  transition: background .3s;
+  position: relative;
+  z-index: 10;
+}
+.topbar-row1 {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+.app-title {
+  font-family: var(--serif);
+  font-size: 28px;
+  font-weight: 600;
+  color: var(--ink);
+  letter-spacing: -.02em;
+  line-height: 1;
+}
+.app-title em {
+  font-style: italic;
+  color: var(--accent);
+}
+.topbar-actions { display:flex; gap:6px; align-items:center; }
+
+/* icon buttons */
+.icon-btn {
+  width: 38px; height: 38px;
+  border-radius: 50%;
+  border: 1.5px solid var(--line);
+  background: var(--paper2);
+  color: var(--ink2);
+  display: flex; align-items:center; justify-content:center;
+  cursor: pointer;
+  transition: all .18s;
+  flex-shrink: 0;
+}
+.icon-btn:active { transform: scale(.92); }
+.icon-btn svg { width:18px; height:18px; }
+
+/* ── SEARCH ─────────────────────────────────────────────────── */
+.search-wrap {
+  position: relative;
+  margin-bottom: 12px;
+}
+.search-icon {
+  position: absolute;
+  left: 12px; top: 50%;
+  transform: translateY(-50%);
+  color: var(--ink3);
+  pointer-events: none;
+  display: flex;
+}
+.search-icon svg { width:16px; height:16px; }
+.search-input {
+  width: 100%;
+  height: 42px;
+  background: var(--paper3);
+  border: 1.5px solid var(--line);
+  border-radius: 12px;
+  padding: 0 36px 0 38px;
+  font-family: var(--body);
+  font-size: 15px;
+  color: var(--ink);
+  outline: none;
+  transition: border-color .18s, background .3s;
+  -webkit-appearance: none;
+}
+.search-input::placeholder { color: var(--ink3); }
+.search-input:focus { border-color: var(--accent); }
+.search-clear {
+  position: absolute;
+  right: 10px; top: 50%;
+  transform: translateY(-50%);
+  width: 22px; height: 22px;
+  border-radius: 50%;
+  background: var(--ink3);
+  color: var(--paper);
+  border: none;
+  cursor: pointer;
+  display: none;
+  align-items: center; justify-content:center;
+  font-size: 12px;
+  line-height: 1;
+  padding: 0;
+}
+.search-clear.visible { display:flex; }
+
+/* ── TABS ───────────────────────────────────────────────────── */
+.tabs {
+  display: flex;
+  gap: 0;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  border-bottom: 1.5px solid var(--line);
+  margin: 0 -18px;
+  padding: 0 18px;
+}
+.tabs::-webkit-scrollbar { display:none; }
+.tab {
+  flex-shrink: 0;
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+  color: var(--ink3);
+  padding: 8px 14px 10px;
+  border-bottom: 2.5px solid transparent;
+  margin-bottom: -1.5px;
+  cursor: pointer;
+  transition: color .18s, border-color .18s;
+  user-select: none;
+  white-space: nowrap;
+}
+.tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+.tab-count {
+  display: inline-block;
+  background: var(--paper3);
+  border-radius: 8px;
+  padding: 1px 5px;
+  font-size: 10px;
+  margin-left: 3px;
+  color: var(--ink3);
+  transition: background .3s;
+}
+.tab.active .tab-count { background: var(--accent3); color: var(--accent); }
+
+/* ── NOTES LIST ─────────────────────────────────────────────── */
+.list-area {
+  flex: 1;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding: 14px 18px calc(var(--safe-bot) + 86px);
+  overscroll-behavior: contain;
+}
+.list-area::-webkit-scrollbar { width:3px; }
+.list-area::-webkit-scrollbar-thumb { background: var(--line); border-radius:4px; }
+
+/* note card */
+.note-card {
+  background: var(--paper2);
+  border: 1.5px solid var(--line);
+  border-radius: 16px;
+  padding: 14px 16px;
+  margin-bottom: 10px;
+  cursor: pointer;
+  transition: transform .15s, box-shadow .15s, background .3s;
+  position: relative;
+  overflow: hidden;
+  animation: cardIn .28s ease both;
+}
+.note-card::before {
+  content: '';
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  width: 3px;
+  background: var(--accent);
+  opacity: 0;
+  transition: opacity .18s;
+  border-radius: 16px 0 0 16px;
+}
+.note-card:active { transform: scale(.97); box-shadow: 0 2px 12px var(--shadow); }
+.note-card.pinned::before { opacity: 1; }
+@keyframes cardIn {
+  from { opacity:0; transform:translateY(10px); }
+  to   { opacity:1; transform:translateY(0); }
+}
+
+.note-card-top {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin-bottom: 5px;
+}
+.note-title {
+  font-family: var(--serif);
+  font-size: 17px;
+  font-weight: 600;
+  color: var(--ink);
+  line-height: 1.25;
+  flex: 1;
+  word-break: break-word;
+}
+.pin-icon { color: var(--accent); flex-shrink:0; margin-top:2px; }
+.pin-icon svg { width:14px; height:14px; }
+.note-preview {
+  font-size: 14px;
+  color: var(--ink2);
+  line-height: 1.55;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  margin-bottom: 8px;
+}
+.note-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  justify-content: space-between;
+}
+.note-date {
+  font-family: var(--mono);
+  font-size: 10.5px;
+  color: var(--ink3);
+  letter-spacing: .02em;
+}
+.note-tags { display:flex; gap:4px; flex-wrap:wrap; }
+.note-tag {
+  font-family: var(--mono);
+  font-size: 10px;
+  background: var(--accent3);
+  color: var(--accent);
+  border-radius: 6px;
+  padding: 2px 6px;
+}
+.note-char-count {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--ink3);
+}
+
+/* highlight search */
+mark {
+  background: rgba(184,92,42,.2);
+  color: var(--accent);
+  border-radius: 2px;
+  padding: 0 1px;
+}
+
+/* empty state */
+.empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+  gap: 12px;
+  opacity: 0;
+  animation: fadeIn .4s .1s ease forwards;
+}
+.empty-icon { font-size: 48px; line-height:1; }
+.empty-title { font-family: var(--serif); font-size: 20px; font-style:italic; color: var(--ink2); text-align:center; }
+.empty-sub { font-size: 14px; color: var(--ink3); text-align:center; line-height:1.5; }
+@keyframes fadeIn { to { opacity:1; } }
+
+/* ── FAB ────────────────────────────────────────────────────── */
+.fab {
+  position: fixed;
+  bottom: calc(var(--safe-bot) + 24px);
+  right: 22px;
+  width: 56px; height: 56px;
+  border-radius: 50%;
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  cursor: pointer;
+  display: flex; align-items:center; justify-content:center;
+  box-shadow: 0 4px 20px var(--shadowM);
+  transition: transform .18s, box-shadow .18s;
+  z-index: 20;
+}
+.fab:active { transform: scale(.91); }
+.fab svg { width:24px; height:24px; }
+
+/* ── EDITOR MODAL ───────────────────────────────────────────── */
+.modal-backdrop {
+  position: fixed; inset:0;
+  background: rgba(0,0,0,.45);
+  z-index: 30;
+  display: none;
+  opacity: 0;
+  transition: opacity .25s;
+}
+.modal-backdrop.open { display:block; opacity:1; }
+
+.editor {
+  position: fixed;
+  inset: 0;
+  background: var(--paper);
+  z-index: 40;
+  display: flex;
+  flex-direction: column;
+  transform: translateY(100%);
+  transition: transform .32s cubic-bezier(.32,.72,0,1), background .3s;
+  will-change: transform;
+}
+.editor.open { transform: translateY(0); }
+
+.editor-topbar {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: calc(var(--safe-top) + 12px) 16px 12px;
+  border-bottom: 1.5px solid var(--line);
+  background: var(--paper);
+  transition: background .3s;
+}
+.editor-back { color: var(--accent); }
+
+.editor-title-input {
+  flex: 1;
+  font-family: var(--serif);
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--ink);
+  background: transparent;
+  border: none;
+  outline: none;
+  -webkit-appearance: none;
+  min-width: 0;
+}
+.editor-title-input::placeholder { color: var(--ink3); font-style:italic; }
+
+.editor-actions { display:flex; gap:6px; }
+
+.editor-toolbar {
+  flex-shrink:0;
+  display: flex;
+  gap:2px;
+  padding: 8px 14px;
+  border-bottom: 1px solid var(--line2);
+  overflow-x: auto;
+  scrollbar-width: none;
+  background: var(--paper2);
+  transition: background .3s;
+}
+.editor-toolbar::-webkit-scrollbar { display:none; }
+.tool-btn {
+  width: 34px; height: 34px;
+  border-radius: 8px;
+  border: none;
+  background: transparent;
+  color: var(--ink2);
+  cursor: pointer;
+  display: flex; align-items:center; justify-content:center;
+  font-family: var(--body);
+  font-size: 14px;
+  flex-shrink:0;
+  transition: background .15s, color .15s;
+}
+.tool-btn:active { background: var(--line); }
+
+.editor-body {
+  flex: 1;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding: 16px 18px calc(var(--safe-bot) + 20px);
+}
+.editor-textarea {
+  width: 100%;
+  min-height: 100%;
+  font-family: var(--body);
+  font-size: 16px;
+  line-height: 1.75;
+  color: var(--ink);
+  background: transparent;
+  border: none;
+  outline: none;
+  resize: none;
+  -webkit-appearance: none;
+  caret-color: var(--accent);
+}
+.editor-textarea::placeholder { color: var(--ink3); font-style:italic; }
+
+/* word/char count bar */
+.editor-footer {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 18px calc(var(--safe-bot) + 8px);
+  border-top: 1px solid var(--line2);
+  background: var(--paper2);
+  transition: background .3s;
+}
+.editor-stat { font-family: var(--mono); font-size: 11px; color: var(--ink3); }
+
+/* ── TAG EDITOR ─────────────────────────────────────────────── */
+.tag-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 10px 18px;
+  border-bottom: 1px solid var(--line2);
+  align-items: center;
+  background: var(--paper);
+  transition: background .3s;
+}
+.tag-pill {
+  font-family: var(--mono);
+  font-size: 11px;
+  background: var(--accent3);
+  color: var(--accent);
+  border-radius: 20px;
+  padding: 3px 10px;
+  display: flex; align-items:center; gap:5px;
+  cursor: default;
+}
+.tag-pill-del {
+  background: none; border:none; color: var(--accent); cursor:pointer;
+  font-size:13px; line-height:1; padding:0; margin:0;
+  display:flex; align-items:center;
+}
+.tag-input {
+  font-family: var(--mono);
+  font-size: 12px;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: var(--ink);
+  min-width: 80px;
+  -webkit-appearance: none;
+}
+.tag-input::placeholder { color: var(--ink3); }
+.tag-label { font-family: var(--mono); font-size: 10px; color: var(--ink3); letter-spacing:.04em; }
+
+/* ── CONTEXT MENU ───────────────────────────────────────────── */
+.ctx-menu {
+  position: fixed;
+  background: var(--paper2);
+  border: 1.5px solid var(--line);
+  border-radius: 14px;
+  box-shadow: 0 8px 32px var(--shadowM);
+  z-index: 50;
+  overflow: hidden;
+  min-width: 180px;
+  animation: ctxIn .18s ease;
+  transition: background .3s;
+}
+@keyframes ctxIn {
+  from { opacity:0; transform:scale(.92); }
+  to   { opacity:1; transform:scale(1); }
+}
+.ctx-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 13px 16px;
+  font-size: 15px;
+  color: var(--ink2);
+  cursor: pointer;
+  border-bottom: 1px solid var(--line2);
+  transition: background .12s;
+}
+.ctx-item:last-child { border-bottom:none; }
+.ctx-item:active { background: var(--line); }
+.ctx-item svg { width:17px; height:17px; flex-shrink:0; }
+.ctx-item.danger { color: var(--red); }
+
+/* ── TOAST ──────────────────────────────────────────────────── */
+.toast {
+  position: fixed;
+  bottom: calc(var(--safe-bot) + 94px);
+  left: 50%;
+  transform: translateX(-50%) translateY(12px);
+  background: var(--ink);
+  color: var(--paper);
+  font-family: var(--mono);
+  font-size: 12px;
+  padding: 9px 18px;
+  border-radius: 20px;
+  white-space: nowrap;
+  opacity: 0;
+  transition: opacity .22s, transform .22s;
+  pointer-events: none;
+  z-index: 60;
+}
+.toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
+
+/* ── SORT BAR ───────────────────────────────────────────────── */
+.sort-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 18px 4px;
+  flex-shrink: 0;
+}
+.sort-label { font-family: var(--mono); font-size: 11px; color: var(--ink3); }
+.sort-btn {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--ink3);
+  background: var(--paper2);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 4px 10px;
+  cursor: pointer;
+  display: flex; align-items:center; gap:4px;
+  transition: background .15s;
+}
+.sort-btn:active { background: var(--paper3); }
+
+/* ── SWIPE TO DELETE ────────────────────────────────────────── */
+.card-swipe-wrap {
+  position: relative;
+  overflow: hidden;
+  border-radius: 16px;
+  margin-bottom: 10px;
+}
+.card-swipe-wrap .note-card { margin-bottom:0; border-radius:16px; }
+.swipe-action {
+  position: absolute;
+  right: 0; top: 0; bottom: 0;
+  width: 80px;
+  background: var(--red);
+  display: flex; align-items:center; justify-content:center;
+  color: #fff;
+  font-family: var(--mono);
+  font-size: 11px;
+  flex-direction: column;
+  gap: 3px;
+  transform: translateX(80px);
+  transition: transform .18s;
+  cursor: pointer;
+  border-radius: 0 16px 16px 0;
+}
+.swipe-action svg { width:20px; height:20px; }
+
+/* ── PULL TO REFRESH indicator ──────────────────────────────── */
+.ptr-indicator {
+  text-align: center;
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--ink3);
+  padding: 8px;
+  height: 0;
+  overflow: hidden;
+  transition: height .2s;
+  flex-shrink:0;
+}
+
+/* ── SCROLL TOP ─────────────────────────────────────────────── */
+.scroll-top-btn {
+  position: fixed;
+  bottom: calc(var(--safe-bot) + 92px);
+  right: 22px;
+  width: 36px; height: 36px;
+  border-radius: 50%;
+  background: var(--paper2);
+  border: 1.5px solid var(--line);
+  color: var(--ink2);
+  display: flex; align-items:center; justify-content:center;
+  cursor: pointer;
+  opacity: 0;
+  transform: translateY(10px);
+  transition: opacity .22s, transform .22s;
+  z-index: 19;
+  box-shadow: 0 2px 10px var(--shadow);
+}
+.scroll-top-btn.visible { opacity:1; transform:translateY(0); }
+.scroll-top-btn svg { width:16px; height:16px; }
+</style>
+</head>
+<body>
+<div class="app" id="app">
+
+  <!-- ── TOPBAR ── -->
+  <div class="topbar">
+    <div class="topbar-row1">
+      <div class="app-title">Memoria AI</em></div>
+      <div class="topbar-actions">
+        <button class="icon-btn" id="theme-toggle" title="Тема" aria-label="Сменить тему">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+        </button>
+        <button class="icon-btn" id="sort-toggle" title="Сортировка" aria-label="Сортировка">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M7 12h10M11 18h2"/></svg>
+        </button>
+      </div>
+    </div>
+    <div class="search-wrap">
+      <div class="search-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg></div>
+      <input class="search-input" id="search" type="search" placeholder="Поиск по заметкам…" autocomplete="off" autocorrect="off" spellcheck="false">
+      <button class="search-clear" id="search-clear" aria-label="Очистить">✕</button>
+    </div>
+    <div class="tabs" id="tabs"></div>
+  </div>
+
+  <!-- sort bar -->
+  <div class="sort-bar">
+    <span class="sort-label" id="result-count"></span>
+    <button class="sort-btn" id="sort-btn">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:12px;height:12px"><path d="M3 4h18M7 8h10M11 12h2"/></svg>
+      <span id="sort-label">Новые</span>
+    </button>
+  </div>
+
+  <!-- ptr -->
+  <div class="ptr-indicator" id="ptr">↓ потяните для обновления</div>
+
+  <!-- list -->
+  <div class="list-area" id="list"></div>
+
+  <!-- FAB -->
+  <button class="fab" id="fab" aria-label="Новая заметка">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
+  </button>
+  <button class="scroll-top-btn" id="scroll-top" aria-label="Наверх">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m18 15-6-6-6 6"/></svg>
+  </button>
+</div>
+
+<!-- ── EDITOR ── -->
+<div class="editor" id="editor" role="dialog" aria-label="Редактор заметки">
+  <div class="editor-topbar">
+    <button class="icon-btn editor-back" id="editor-back" aria-label="Назад">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m15 18-6-6 6-6"/></svg>
+    </button>
+    <input class="editor-title-input" id="editor-title" placeholder="Заголовок…" maxlength="120">
+    <div class="editor-actions">
+      <button class="icon-btn" id="pin-btn" title="Закрепить" aria-label="Закрепить">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" id="pin-svg"><path d="m12 17-1-6H6l2-6h8l2 6h-5l-1 6z"/><path d="M12 17v4"/></svg>
+      </button>
+      <button class="icon-btn" id="editor-menu-btn" aria-label="Ещё">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="5" r="1" fill="currentColor"/><circle cx="12" cy="12" r="1" fill="currentColor"/><circle cx="12" cy="19" r="1" fill="currentColor"/></svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- tags -->
+  <div class="tag-row" id="tag-row">
+    <span class="tag-label">тег:</span>
+    <div id="tags-container"></div>
+    <input class="tag-input" id="tag-input" placeholder="добавить тег…" maxlength="20">
+  </div>
+
+  <!-- toolbar -->
+  <div class="editor-toolbar">
+    <button class="tool-btn" data-action="bold" title="Жирный"><b>B</b></button>
+    <button class="tool-btn" data-action="italic" title="Курсив"><i>I</i></button>
+    <button class="tool-btn" data-action="h1" title="Заголовок">H1</button>
+    <button class="tool-btn" data-action="h2" title="Подзаголовок">H2</button>
+    <button class="tool-btn" data-action="ul" title="Список">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>
+    </button>
+    <button class="tool-btn" data-action="checkbox" title="Чекбокс">☑</button>
+    <button class="tool-btn" data-action="quote" title="Цитата">❝</button>
+    <button class="tool-btn" data-action="hr" title="Разделитель">—</button>
+    <button class="tool-btn" data-action="date" title="Дата">📅</button>
+    <button class="tool-btn" data-action="time" title="Время">🕐</button>
+  </div>
+
+  <div class="editor-body">
+    <textarea class="editor-textarea" id="editor-body" placeholder="Начните писать…"></textarea>
+  </div>
+
+  <div class="editor-footer">
+    <span class="editor-stat" id="editor-words">0 слов</span>
+    <span class="editor-stat" id="editor-chars">0 симв.</span>
+    <span class="editor-stat" id="editor-saved">—</span>
+  </div>
+</div>
+
+<!-- ── CONTEXT MENUS ── -->
+<div class="ctx-menu" id="ctx-menu" style="display:none"></div>
+<div class="modal-backdrop" id="ctx-backdrop"></div>
+
+<!-- ── TOAST ── -->
+<div class="toast" id="toast"></div>
+
+<script>
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   STATE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+const STORAGE_KEY = 'notes_v2';
+
+let notes = [];
+let currentId = null;
+let searchQ = '';
+let activeTag = 'all';
+let sortMode = 'new'; // new | old | az | len
+let saveTmr = null;
+let toastTmr = null;
+let theme = localStorage.getItem('notes_theme') || 'light';
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   PERSISTENCE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+function load() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    notes = raw ? JSON.parse(raw) : defaultNotes();
+  } catch { notes = defaultNotes(); }
+}
+function save() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(notes));
+}
+function defaultNotes() {
+  const now = Date.now();
+  return [
+    { id: uid(), title: 'Добро пожаловать', body: 'Это ваше личное пространство для заметок.\n\nЗдесь можно хранить мысли, идеи, задачи — всё что угодно.\n\nПотяните карточку влево, чтобы удалить. Долгое нажатие — меню действий.', tags: ['начало'], pinned: true, createdAt: now, updatedAt: now },
+    { id: uid(), title: 'Идеи проекта', body: '• Переработать главную страницу\n• Добавить тёмную тему\n• Написать документацию\n• Провести ретро с командой', tags: ['работа', 'идеи'], pinned: false, createdAt: now - 86400000, updatedAt: now - 86400000 },
+    { id: uid(), title: 'Список книг', body: 'Хочу прочитать:\n\n1. Мастер и Маргарита — Булгаков\n2. Преступление и наказание — Достоевский\n3. Война и мир — Толстой\n4. Атлант расправил плечи — Рэнд', tags: ['книги'], pinned: false, createdAt: now - 172800000, updatedAt: now - 172800000 },
+  ];
+}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   HELPERS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2,7); }
+
+function fmtDate(ts) {
+  const d = new Date(ts), now = new Date();
+  const sameDay = d.toDateString() === now.toDateString();
+  if (sameDay) return d.toLocaleTimeString('ru', { hour:'2-digit', minute:'2-digit' });
+  const diff = (now - d) / 86400000;
+  if (diff < 2) return 'вчера';
+  if (diff < 7) return d.toLocaleDateString('ru', { weekday:'short' });
+  return d.toLocaleDateString('ru', { day:'numeric', month:'short' });
+}
+
+function wordCount(s) { return s.trim() ? s.trim().split(/\s+/).length : 0; }
+
+function escHtml(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function highlight(text, q) {
+  if (!q) return escHtml(text);
+  const esc = q.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
+  return escHtml(text).replace(new RegExp(`(${esc})`, 'gi'), '<mark>$1</mark>');
+}
+
+function toast(msg, dur = 2200) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  clearTimeout(toastTmr);
+  toastTmr = setTimeout(() => el.classList.remove('show'), dur);
+}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   THEME
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+function applyTheme(t) {
+  theme = t;
+  document.documentElement.setAttribute('data-theme', t);
+  document.getElementById('theme-meta').content = t === 'dark' ? '#1a1812' : '#f5f0e8';
+  localStorage.setItem('notes_theme', t);
+  const btn = document.getElementById('theme-toggle');
+  btn.innerHTML = t === 'dark'
+    ? `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>`
+    : `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>`;
+}
+document.getElementById('theme-toggle').addEventListener('click', () => applyTheme(theme === 'dark' ? 'light' : 'dark'));
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   TAGS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+function allTags() {
+  const set = new Set();
+  notes.forEach(n => n.tags.forEach(t => set.add(t)));
+  return [...set].sort();
+}
+
+function renderTabs() {
+  const tags = allTags();
+  const counts = { all: notes.length };
+  notes.forEach(n => n.tags.forEach(t => { counts[t] = (counts[t]||0)+1; }));
+  const items = [{ id:'all', label:'Все' }, ...tags.map(t => ({ id:t, label:t }))];
+  document.getElementById('tabs').innerHTML = items.map(it =>
+    `<div class="tab ${activeTag===it.id?'active':''}" data-tag="${it.id}">${escHtml(it.label)}<span class="tab-count">${counts[it.id]||0}</span></div>`
+  ).join('');
+  document.querySelectorAll('.tab').forEach(el =>
+    el.addEventListener('click', () => { activeTag = el.dataset.tag; renderAll(); }));
+}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   FILTER + SORT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+function filtered() {
+  let list = notes.slice();
+  if (activeTag !== 'all') list = list.filter(n => n.tags.includes(activeTag));
+  if (searchQ) {
+    const q = searchQ.toLowerCase();
+    list = list.filter(n =>
+      n.title.toLowerCase().includes(q) ||
+      n.body.toLowerCase().includes(q) ||
+      n.tags.some(t => t.toLowerCase().includes(q))
+    );
+  }
+  // pinned first
+  const pinned = list.filter(n => n.pinned);
+  const rest   = list.filter(n => !n.pinned);
+  const sorter = {
+    new: (a,b) => b.updatedAt - a.updatedAt,
+    old: (a,b) => a.updatedAt - b.updatedAt,
+    az:  (a,b) => a.title.localeCompare(b.title, 'ru'),
+    len: (a,b) => b.body.length - a.body.length,
+  }[sortMode] || ((a,b) => b.updatedAt - a.updatedAt);
+  return [...pinned.sort(sorter), ...rest.sort(sorter)];
+}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   RENDER LIST
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+function renderList() {
+  const list = document.getElementById('list');
+  const items = filtered();
+  document.getElementById('result-count').textContent =
+    searchQ ? `найдено: ${items.length}` : `${items.length} заметок`;
+
+  if (!items.length) {
+    list.innerHTML = `<div class="empty">
+      <div class="empty-icon">${searchQ ? '🔍' : '📝'}</div>
+      <div class="empty-title">${searchQ ? 'Ничего не найдено' : 'Нет заметок'}</div>
+      <div class="empty-sub">${searchQ ? 'Попробуйте другой запрос' : 'Нажмите + чтобы создать первую заметку'}</div>
+    </div>`;
+    return;
+  }
+
+  list.innerHTML = items.map(n => {
+    const preview = n.body.replace(/\n+/g,' ').slice(0,120);
+    const tagsHtml = n.tags.map(t => `<span class="note-tag">${escHtml(t)}</span>`).join('');
+    return `
+    <div class="card-swipe-wrap" data-id="${n.id}">
+      <div class="note-card ${n.pinned?'pinned':''}" data-id="${n.id}">
+        <div class="note-card-top">
+          <div class="note-title">${highlight(n.title || 'Без названия', searchQ)}</div>
+          ${n.pinned ? `<span class="pin-icon"><svg viewBox="0 0 24 24" fill="currentColor"><path d="m12 17-1-6H6l2-6h8l2 6h-5l-1 6z"/><path d="M12 17v4" stroke="currentColor" stroke-width="2" fill="none"/></svg></span>` : ''}
+        </div>
+        ${preview ? `<div class="note-preview">${highlight(preview, searchQ)}</div>` : ''}
+        <div class="note-meta">
+          <span class="note-date">${fmtDate(n.updatedAt)}</span>
+          <div class="note-tags">${tagsHtml}</div>
+          <span class="note-char-count">${n.body.length} симв.</span>
+        </div>
+      </div>
+      <div class="swipe-action" data-id="${n.id}">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+        Удалить
+      </div>
+    </div>`;
+  }).join('');
+
+  // tap → open
+  list.querySelectorAll('.note-card').forEach(el => {
+    el.addEventListener('click', () => openEditor(el.dataset.id));
+    // long press → context menu
+    let lpt;
+    el.addEventListener('pointerdown', e => { lpt = setTimeout(() => showCtxMenu(el.dataset.id, e), 550); });
+    el.addEventListener('pointerup', () => clearTimeout(lpt));
+    el.addEventListener('pointermove', () => clearTimeout(lpt));
+  });
+
+  // swipe actions
+  list.querySelectorAll('.swipe-action').forEach(el => {
+    el.addEventListener('click', () => deleteNote(el.dataset.id));
+  });
+
+  // swipe gesture
+  initSwipe();
+}
+
+function renderAll() { renderTabs(); renderList(); }
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   SWIPE TO DELETE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+function initSwipe() {
+  document.querySelectorAll('.card-swipe-wrap').forEach(wrap => {
+    const card = wrap.querySelector('.note-card');
+    const action = wrap.querySelector('.swipe-action');
+    let startX = 0, dx = 0, swiping = false;
+
+    card.addEventListener('pointerdown', e => {
+      startX = e.clientX;
+      swiping = false;
+    });
+    card.addEventListener('pointermove', e => {
+      dx = e.clientX - startX;
+      if (Math.abs(dx) > 10 && dx < 0) {
+        swiping = true;
+        const x = Math.max(-80, Math.min(0, dx));
+        card.style.transform = `translateX(${x}px)`;
+        action.style.transform = `translateX(${80+x}px)`;
+      }
+    });
+    card.addEventListener('pointerup', () => {
+      if (dx < -50) {
+        card.style.transform = 'translateX(-80px)';
+        action.style.transform = 'translateX(0)';
+      } else {
+        card.style.transform = '';
+        action.style.transform = '';
+      }
+      dx = 0;
+    });
+    card.addEventListener('pointercancel', () => {
+      card.style.transform = ''; action.style.transform = '';
+    });
+  });
+}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   NOTE CRUD
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+function createNote() {
+  const n = { id: uid(), title: '', body: '', tags: [], pinned: false, createdAt: Date.now(), updatedAt: Date.now() };
+  notes.unshift(n);
+  save();
+  return n.id;
+}
+
+function deleteNote(id, skipConfirm = false) {
+  const idx = notes.findIndex(n => n.id === id);
+  if (idx === -1) return;
+  const deleted = notes.splice(idx, 1)[0];
+  save();
+  renderAll();
+  toast('Заметка удалена');
+  // undo
+  const t = document.getElementById('toast');
+  clearTimeout(toastTmr);
+  t.innerHTML = 'Удалено &nbsp;<b style="cursor:pointer;text-decoration:underline" id="undo-link">Отменить</b>';
+  t.classList.add('show');
+  toastTmr = setTimeout(() => t.classList.remove('show'), 3500);
+  document.getElementById('undo-link')?.addEventListener('click', () => {
+    notes.splice(idx, 0, deleted);
+    save(); renderAll();
+    t.classList.remove('show');
+  });
+}
+
+function togglePin(id) {
+  const n = notes.find(n => n.id === id);
+  if (!n) return;
+  n.pinned = !n.pinned;
+  n.updatedAt = Date.now();
+  save(); renderAll();
+  toast(n.pinned ? '📌 Закреплено' : 'Откреплено');
+  // update pin btn if editor open
+  if (currentId === id) syncPinBtn(n.pinned);
+}
+
+function duplicateNote(id) {
+  const src = notes.find(n => n.id === id);
+  if (!src) return;
+  const copy = { ...src, id: uid(), title: src.title + ' (копия)', createdAt: Date.now(), updatedAt: Date.now() };
+  notes.unshift(copy);
+  save(); renderAll();
+  toast('Заметка скопирована');
+}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   EDITOR
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+const editorEl = document.getElementById('editor');
+
+function openEditor(id) {
+  currentId = id;
+  const n = notes.find(n => n.id === id);
+  if (!n) return;
+  document.getElementById('editor-title').value = n.title;
+  document.getElementById('editor-body').value  = n.body;
+  renderEditorTags(n.tags);
+  syncPinBtn(n.pinned);
+  updateEditorStats();
+  editorEl.classList.add('open');
+  setTimeout(() => document.getElementById('editor-body').focus(), 350);
+}
+
+function closeEditor() {
+  autoSave(true);
+  editorEl.classList.remove('open');
+  currentId = null;
+  renderAll();
+}
+
+function syncPinBtn(pinned) {
+  const btn = document.getElementById('pin-btn');
+  btn.style.color = pinned ? 'var(--accent)' : '';
+}
+
+function autoSave(immediate = false) {
+  clearTimeout(saveTmr);
+  if (immediate) doSave();
+  else saveTmr = setTimeout(doSave, 800);
+}
+
+function doSave() {
+  if (!currentId) return;
+  const n = notes.find(n => n.id === currentId);
+  if (!n) return;
+  n.title = document.getElementById('editor-title').value.trim();
+  n.body  = document.getElementById('editor-body').value;
+  n.updatedAt = Date.now();
+  save();
+  document.getElementById('editor-saved').textContent = 'Сохранено ' + fmtDate(n.updatedAt);
+}
+
+function updateEditorStats() {
+  const body = document.getElementById('editor-body').value;
+  document.getElementById('editor-words').textContent = wordCount(body) + ' слов';
+  document.getElementById('editor-chars').textContent = body.length + ' симв.';
+}
+
+/* ── editor events ── */
+document.getElementById('editor-title').addEventListener('input', autoSave);
+document.getElementById('editor-body').addEventListener('input', () => { autoSave(); updateEditorStats(); });
+document.getElementById('editor-back').addEventListener('click', closeEditor);
+document.getElementById('pin-btn').addEventListener('click', () => togglePin(currentId));
+
+// toolbar actions
+document.querySelectorAll('.tool-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const ta = document.getElementById('editor-body');
+    const s = ta.selectionStart, e = ta.selectionEnd;
+    const sel = ta.value.slice(s, e);
+    const now = new Date();
+    const inserts = {
+      bold:     sel ? `**${sel}**` : '**жирный**',
+      italic:   sel ? `_${sel}_`  : '_курсив_',
+      h1:       '\n# ',
+      h2:       '\n## ',
+      ul:       '\n• ',
+      checkbox: '\n☐ ',
+      quote:    '\n> ',
+      hr:       '\n─────────────\n',
+      date:     now.toLocaleDateString('ru', { day:'numeric', month:'long', year:'numeric' }),
+      time:     now.toLocaleTimeString('ru', { hour:'2-digit', minute:'2-digit' }),
+    };
+    const ins = inserts[btn.dataset.action] || '';
+    ta.setRangeText(ins, s, e, 'end');
+    ta.focus();
+    autoSave();
+  });
+});
+
+// editor context menu
+document.getElementById('editor-menu-btn').addEventListener('click', e => {
+  showEditorMenu(e);
+});
+
+/* ── keyboard ── */
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape' && editorEl.classList.contains('open')) closeEditor();
+});
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   TAGS IN EDITOR
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+let editorTags = [];
+
+function renderEditorTags(tags) {
+  editorTags = tags.slice();
+  const cont = document.getElementById('tags-container');
+  cont.innerHTML = editorTags.map((t,i) => `
+    <span class="tag-pill">${escHtml(t)}
+      <button class="tag-pill-del" data-i="${i}">✕</button>
+    </span>`).join('');
+  cont.querySelectorAll('.tag-pill-del').forEach(b =>
+    b.addEventListener('click', () => removeTag(+b.dataset.i)));
+}
+
+function removeTag(i) {
+  editorTags.splice(i,1);
+  syncTagsToNote();
+  renderEditorTags(editorTags);
+}
+
+function syncTagsToNote() {
+  const n = notes.find(n => n.id === currentId);
+  if (n) { n.tags = editorTags.slice(); n.updatedAt = Date.now(); save(); }
+}
+
+document.getElementById('tag-input').addEventListener('keydown', e => {
+  const inp = e.target;
+  if ((e.key === 'Enter' || e.key === ',') && inp.value.trim()) {
+    e.preventDefault();
+    const tag = inp.value.trim().replace(/,/g,'').toLowerCase();
+    if (tag && !editorTags.includes(tag) && editorTags.length < 8) {
+      editorTags.push(tag);
+      syncTagsToNote();
+      renderEditorTags(editorTags);
+    }
+    inp.value = '';
+  }
+  if (e.key === 'Backspace' && !inp.value && editorTags.length) {
+    removeTag(editorTags.length-1);
+  }
+});
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   CONTEXT MENUS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+function showCtxMenu(id, e) {
+  const n = notes.find(n => n.id === id);
+  if (!n) return;
+  const menu = document.getElementById('ctx-menu');
+  const items = [
+    { icon:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.12 2.12 0 0 1 3 3L12 15l-4 1 1-4Z"/></svg>`, label:'Открыть', cb:() => openEditor(id) },
+    { icon:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m12 17-1-6H6l2-6h8l2 6h-5l-1 6z"/><path d="M12 17v4"/></svg>`, label: n.pinned?'Открепить':'Закрепить', cb:() => togglePin(id) },
+    { icon:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>`, label:'Дублировать', cb:() => duplicateNote(id) },
+    { icon:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>`, label:'Удалить', danger:true, cb:() => deleteNote(id) },
+  ];
+  menu.innerHTML = items.map((it,i) =>
+    `<div class="ctx-item ${it.danger?'danger':''}" data-i="${i}">${it.icon}${it.label}</div>`
+  ).join('');
+  menu.querySelectorAll('.ctx-item').forEach((el,i) =>
+    el.addEventListener('click', () => { hideCtx(); items[i].cb(); }));
+
+  // position
+  const px = Math.min(e.clientX, window.innerWidth - 210);
+  const py = Math.min(e.clientY, window.innerHeight - items.length*48 - 20);
+  menu.style.left = px+'px'; menu.style.top = py+'px';
+  menu.style.display = 'block';
+  const bd = document.getElementById('ctx-backdrop');
+  bd.classList.add('open');
+}
+
+function showEditorMenu(e) {
+  const id = currentId;
+  const n = notes.find(n => n.id === id);
+  if (!n) return;
+  const menu = document.getElementById('ctx-menu');
+  const items = [
+    { icon:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>`, label:'Дублировать', cb:() => { closeEditor(); duplicateNote(id); } },
+    { icon:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>`, label:'Скопировать текст', cb:() => { navigator.clipboard?.writeText(n.body).then(()=>toast('Скопировано')); } },
+    { icon:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>`, label:'Удалить заметку', danger:true, cb:() => { closeEditor(); deleteNote(id); } },
+  ];
+  menu.innerHTML = items.map((it,i) =>
+    `<div class="ctx-item ${it.danger?'danger':''}" data-i="${i}">${it.icon}${it.label}</div>`
+  ).join('');
+  menu.querySelectorAll('.ctx-item').forEach((el,i) =>
+    el.addEventListener('click', () => { hideCtx(); items[i].cb(); }));
+  const rect = e.target.getBoundingClientRect();
+  menu.style.right  = '16px';
+  menu.style.left   = 'auto';
+  menu.style.top    = rect.bottom+6+'px';
+  menu.style.display = 'block';
+  document.getElementById('ctx-backdrop').classList.add('open');
+}
+
+function hideCtx() {
+  document.getElementById('ctx-menu').style.display = 'none';
+  document.getElementById('ctx-backdrop').classList.remove('open');
+}
+document.getElementById('ctx-backdrop').addEventListener('click', hideCtx);
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   SEARCH
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+document.getElementById('search').addEventListener('input', e => {
+  searchQ = e.target.value.trim();
+  document.getElementById('search-clear').classList.toggle('visible', !!searchQ);
+  renderAll();
+});
+document.getElementById('search-clear').addEventListener('click', () => {
+  document.getElementById('search').value = '';
+  searchQ = '';
+  document.getElementById('search-clear').classList.remove('visible');
+  renderAll();
+});
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   SORT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+const sortModes = [
+  { id:'new', label:'Новые' },
+  { id:'old', label:'Старые' },
+  { id:'az',  label:'А-Я' },
+  { id:'len', label:'Длинные' },
+];
+document.getElementById('sort-btn').addEventListener('click', () => {
+  const idx = sortModes.findIndex(m => m.id === sortMode);
+  sortMode = sortModes[(idx+1) % sortModes.length].id;
+  document.getElementById('sort-label').textContent = sortModes.find(m=>m.id===sortMode).label;
+  renderAll();
+});
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   FAB + SCROLL TOP
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+document.getElementById('fab').addEventListener('click', () => {
+  const id = createNote();
+  renderAll();
+  openEditor(id);
+});
+
+const listEl = document.getElementById('list');
+listEl.addEventListener('scroll', () => {
+  document.getElementById('scroll-top').classList.toggle('visible', listEl.scrollTop > 200);
+});
+document.getElementById('scroll-top').addEventListener('click', () => {
+  listEl.scrollTo({ top:0, behavior:'smooth' });
+});
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   SWIPE BACK (editor)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+let editorSwipeX = 0;
+editorEl.addEventListener('touchstart', e => { editorSwipeX = e.touches[0].clientX; }, { passive:true });
+editorEl.addEventListener('touchend', e => {
+  const dx = e.changedTouches[0].clientX - editorSwipeX;
+  if (dx > 80 && editorSwipeX < 40) closeEditor();
+}, { passive:true });
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   PWA — SERVICE WORKER (inline via blob)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+const SW_CODE = `
+const CACHE = 'notes-v1';
+const ASSETS = [self.location.href];
+self.addEventListener('install', e => {
+  e.waitUntil(caches.open(CACHE).then(c => c.addAll(ASSETS)));
+  self.skipWaiting();
+});
+self.addEventListener('activate', e => {
+  e.waitUntil(caches.keys().then(ks => Promise.all(ks.filter(k=>k!==CACHE).map(k=>caches.delete(k)))));
+  self.clients.claim();
+});
+self.addEventListener('fetch', e => {
+  e.respondWith(caches.match(e.request).then(r => r || fetch(e.request)));
+});
+`;
+
+if ('serviceWorker' in navigator) {
+  const blob = new Blob([SW_CODE], { type:'application/javascript' });
+  const url  = URL.createObjectURL(blob);
+  navigator.serviceWorker.register(url, { scope:'/' }).catch(()=>{});
+}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   PWA MANIFEST (injected)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+const manifest = {
+  name: 'Мои заметки',
+  short_name: 'Заметки',
+  start_url: '.',
+  display: 'standalone',
+  background_color: '#f5f0e8',
+  theme_color: '#b85c2a',
+  icons: [{ src: "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%23b85c2a'/><text y='72' x='14' font-size='64'>📝</text></svg>", sizes:'any', type:'image/svg+xml' }]
+};
+const mBlob = new Blob([JSON.stringify(manifest)], { type:'application/manifest+json' });
+const mLink = document.createElement('link');
+mLink.rel = 'manifest'; mLink.href = URL.createObjectURL(mBlob);
+document.head.appendChild(mLink);
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   INIT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+load();
+applyTheme(theme);
+renderAll();
+</script>
+</body>
+</html>

@@ -804,13 +804,13 @@ const App = {
             html.classList.remove('dark');
             body.classList.remove('bg-stone-50', 'text-stone-900');
             body.classList.add('bg-darker', 'text-gray-100');
-            localStorage.setItem('memoria-dark-mode', 'true');
+            localStorage.setItem('memoria-dark-mode', 'false');
         } else {
             // Сейчас тёмная тема (класса dark нет), переключаем на светлую
             html.classList.add('dark');
             body.classList.remove('bg-darker', 'text-gray-100');
             body.classList.add('bg-stone-50', 'text-stone-900');
-            localStorage.setItem('memoria-dark-mode', 'false');
+            localStorage.setItem('memoria-dark-mode', 'true');
         }
 
         // Обновляем иконку кнопки переключения темы
@@ -822,36 +822,36 @@ const App = {
         // Синхронизируем чекбокс в настройках
         const darkToggle = document.getElementById('dark-mode-toggle');
         if (darkToggle) {
-            darkToggle.checked = !html.classList.contains('dark');
+            darkToggle.checked = html.classList.contains('dark');
         }
     },
 
     initTheme() {
         const saved = localStorage.getItem('memoria-dark-mode');
         // saved === null → не задано → тёмная тема (по умолчанию)
-        // saved === 'true' → тёмная тема
-        // saved === 'false' → светлая тема
-        const isDark = saved === null ? true : saved === 'true';
+        // saved === 'true' → светлая тема (класс dark добавляем)
+        // saved === 'false' → тёмная тема (класс dark не добавляем)
+        const isLight = saved === null ? false : saved === 'true';
         
         const html = document.documentElement;
         const body = document.body;
         
-        if (isDark) {
-            // Тёмная тема: не добавляем класс dark
-            html.classList.remove('dark');
-            body.classList.remove('bg-stone-50', 'text-stone-900');
-            body.classList.add('bg-darker', 'text-gray-100');
-        } else {
+        if (isLight) {
             // Светлая тема: добавляем класс dark для Tailwind
             html.classList.add('dark');
             body.classList.remove('bg-darker', 'text-gray-100');
             body.classList.add('bg-stone-50', 'text-stone-900');
+        } else {
+            // Тёмная тема: не добавляем класс dark
+            html.classList.remove('dark');
+            body.classList.remove('bg-stone-50', 'text-stone-900');
+            body.classList.add('bg-darker', 'text-gray-100');
         }
 
         // Обновляем иконку кнопки переключения темы
         const toggleBtn = document.getElementById('theme-toggle');
         if (toggleBtn) {
-            toggleBtn.textContent = isDark ? '🌙' : '☀️';
+            toggleBtn.textContent = isLight ? '☀️' : '🌙';
         }
         
         // Синхронизируем чекбокс в настройках

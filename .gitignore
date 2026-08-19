@@ -42,7 +42,11 @@ yarn-error.log*
 *.log
 *.tmp
 *.swp
-*.swo
+
+# Environment
+.env
+.env.local
+*.env.*
 
 # OS generated files
 .DS_Store
