@@ -38,34 +38,28 @@
             const isDark = saved === null ? true : saved === 'true';
             
             if (isDark) {
-                // Тёмная тема: не добавляем класс dark
-                document.documentElement.classList.remove('dark');
-                document.body.classList.remove('bg-stone-50', 'text-stone-900');
-                document.body.classList.add('bg-darker', 'text-gray-100');
-            } else {
-                // Светлая тема: добавляем класс dark для Tailwind
                 document.documentElement.classList.add('dark');
-                document.body.classList.remove('bg-darker', 'text-gray-100');
-                document.body.classList.add('bg-stone-50', 'text-stone-900');
+            } else {
+                document.documentElement.classList.remove('dark');
             }
         })();
     </script>
 </head>
-<body class="bg-darker text-gray-100 min-h-screen">
+<body class="min-h-screen">
     <!-- Onboarding -->
-    <div id="onboarding" class="fixed inset-0 z-[100] flex flex-col bg-darker dark:bg-stone-50">
+    <div id="onboarding" class="fixed inset-0 z-[100] flex flex-col bg-primary dark:bg-stone-50">
         <div class="flex-1 flex flex-col items-center justify-center p-6 text-center">
             <div id="onboarding-content">
                 <div class="onboarding-screen" data-screen="1">
                     <div class="text-8xl mb-8">🧠</div>
-                    <h1 class="text-3xl font-bold mb-4 text-stone-100 dark:text-stone-900">Добро пожаловать в Memoria</h1>
-                    <p class="text-stone-400 dark:text-stone-500 text-lg mb-8">Ваш личный архив мыслей и проектов</p>
+                    <h1 class="text-3xl font-bold mb-4 text-text-primary dark:text-stone-900">Добро пожаловать в Memoria</h1>
+                    <p class="text-text-secondary dark:text-stone-500 text-lg mb-8">Ваш личный архив мыслей и проектов</p>
                     <button class="onboarding-next bg-primary px-8 py-3 rounded-xl font-semibold text-white">Начать</button>
                 </div>
                 <div class="onboarding-screen hidden" data-screen="2">
                     <div class="text-8xl mb-8">🤖</div>
-                    <h2 class="text-2xl font-bold mb-4 text-stone-100 dark:text-stone-900">AI прямо в вашем телефоне</h2>
-                    <p class="text-stone-400 dark:text-stone-500 text-lg mb-8">Автотеги и аналитика. Всё оффлайн.</p>
+                    <h2 class="text-2xl font-bold mb-4 text-text-primary dark:text-stone-900">AI прямо в вашем телефоне</h2>
+                    <p class="text-text-secondary dark:text-stone-500 text-lg mb-8">Автотеги и аналитика. Всё оффлайн.</p>
                     <div class="flex gap-3 justify-center">
                         <button class="onboarding-prev bg-card dark:bg-white px-6 py-3 rounded-xl dark:text-stone-900">Назад</button>
                         <button class="onboarding-next bg-primary px-8 py-3 rounded-xl font-semibold text-white">Далее</button>
@@ -73,8 +67,8 @@
                 </div>
                 <div class="onboarding-screen hidden" data-screen="3">
                     <div class="text-8xl mb-8">🔒</div>
-                    <h2 class="text-2xl font-bold mb-4 text-stone-100 dark:text-stone-900">Ваши данные = только ваши</h2>
-                    <p class="text-stone-400 dark:text-stone-500 text-lg mb-8">Никаких аккаунтов и облаков.</p>
+                    <h2 class="text-2xl font-bold mb-4 text-text-primary dark:text-stone-900">Ваши данные = только ваши</h2>
+                    <p class="text-text-secondary dark:text-stone-500 text-lg mb-8">Никаких аккаунтов и облаков.</p>
                     <div class="flex gap-3 justify-center">
                         <button class="onboarding-prev bg-card dark:bg-white px-6 py-3 rounded-xl dark:text-stone-900">Назад</button>
                         <button id="onboarding-finish" class="bg-primary px-8 py-3 rounded-xl font-semibold text-white">В приложение</button>
