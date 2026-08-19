@@ -2,7 +2,34 @@
     -webkit-tap-highlight-color: transparent;
 }
 
+:root {
+    --bg-primary: #ffffff;
+    --bg-secondary: #f7f7f5;
+    --bg-hover: #efefef;
+    --bg-active: #e8e8e6;
+    --text-primary: #37352f;
+    --text-secondary: #9b9a97;
+    --border-color: #e1e1e0;
+    --accent-color: #2eaadc;
+    --primary: #ea580c;
+}
+
+.dark {
+    --bg-primary: #191919;
+    --bg-secondary: #202020;
+    --bg-hover: #2c2c2c;
+    --bg-active: #2e2e2e;
+    --text-primary: #d4d4d4;
+    --text-secondary: #9b9a97;
+    --border-color: #373737;
+    --accent-color: #38bdf8;
+}
+
 body {
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, "Apple Color Emoji", Arial, sans-serif, "Segoe UI Emoji", "Segoe UI Symbol";
+    transition: background-color 0.2s, color 0.2s;
     -webkit-font-smoothing: antialiased;
     overflow-x: hidden;
 }
@@ -15,6 +42,12 @@ body {
 .scrollbar-hide::-webkit-scrollbar {
     display: none;
 }
+
+/* Custom Scrollbar */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--text-secondary); }
 
 /* ==================== TAB NAVIGATION ==================== */
 .tab-view {
@@ -65,10 +98,10 @@ body {
 
 /* ==================== MEMORY CARDS ==================== */
 .memory-card {
-    background: #292524;
+    background: var(--bg-secondary);
     border-radius: 1rem;
     padding: 1rem;
-    border: 1px solid #44403c;
+    border: 1px solid var(--border-color);
     transition: all 0.2s ease;
     cursor: pointer;
     position: relative;
@@ -78,14 +111,14 @@ body {
 
 .memory-card:hover,
 .memory-card:active {
-    border-color: #ea580c;
+    border-color: var(--primary, #ea580c);
     transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(234, 88, 12, 0.15);
+    box-shadow: 0 4px 12px rgba(234, 88, 12, 0.1);
 }
 
 .memory-card.expanded {
-    background: #1c1917;
-    border-color: #ea580c;
+    background: var(--bg-primary);
+    border-color: var(--primary, #ea580c);
 }
 
 .memory-card .preview {
@@ -258,7 +291,7 @@ body {
 }
 
 .scrollbar-thin::-webkit-scrollbar-thumb {
-    background: #44403c;
+    background: var(--border-color);
     border-radius: 2px;
 }
 
@@ -269,85 +302,134 @@ input[type="date"]::-webkit-calendar-picker-indicator {
 
 textarea::placeholder,
 input::placeholder {
-    color: #78716c;
+    color: var(--text-secondary);
 }
 
-input:focus,
-textarea:focus {
-    outline: none;
+input, textarea, select {
+    background: var(--bg-primary);
+    border: 1px solid var(--border-color);
+    color: var(--text-primary);
 }
 
-/* ==================== DARK MODE OVERRIDES ==================== */
-/* When html has .dark class, Tailwind's dark: variants activate */
-/* These custom overrides handle remaining elements */
-html.dark body {
-    background-color: #f5f5f4 !important;
-    color: #1c1917 !important;
+input:focus, textarea:focus, select:focus {
+    outline: 2px solid var(--accent-color);
+    border-color: transparent;
 }
 
-html.dark .memory-card {
-    background: #ffffff !important;
-    border-color: #e7e5e4 !important;
+/* ==================== TYPING INDICATOR ==================== */
+.typing-indicator .dot {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--text-secondary);
+    animation: pulse 1.4s infinite;
+}
+.typing-indicator .dot:nth-child(2) { animation-delay: 0.2s; }
+.typing-indicator .dot:nth-child(3) { animation-delay: 0.4s; }
+@keyframes pulse {
+    0%,60%,100% { opacity: 0.2; transform: scale(0.8); }
+    30% { opacity: 1; transform: scale(1); }
 }
 
-html.dark .memory-card:hover,
-html.dark .memory-card:active {
-    border-color: #ea580c !important;
-    box-shadow: 0 4px 12px rgba(234, 88, 12, 0.1) !important;
+.note-content:empty::before {
+    content: "Напишите что-нибудь...";
+    color: var(--text-secondary);
 }
 
-html.dark .memory-card.expanded {
-    background: #f5f5f4 !important;
-    border-color: #ea580c !important;
+.page {
+    animation: fadeUp 0.2s ease;
+}
+@keyframes fadeUp {
+    0% { opacity: 0; transform: translateY(4px); }
+    100% { opacity: 1; transform: translateY(0); }
 }
 
-html.dark .tag {
-    background: rgba(234, 88, 12, 0.1) !important;
-    color: #ea580c !important;
-    border-color: rgba(234, 88, 12, 0.2) !important;
-}
+.kanban-card.dragging { opacity: 0.4; }
 
-html.dark .modal-open {
-    background-color: rgba(255, 255, 255, 0.95) !important;
+/* Notion-style Navigation */
+.nav-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 6px 12px;
+    margin: 1px 4px;
+    border-radius: 4px;
+    color: var(--text-secondary);
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    border: 1px solid transparent;
 }
-
-/* Light mode (default) - explicit colors */
-body.bg-darker {
-    background-color: #0c0a09 !important;
-    color: #f5f5f4 !important;
+.nav-item:hover {
+    background: var(--bg-hover);
+    color: var(--text-primary);
 }
-
-body.bg-darker .memory-card {
-    background: #292524 !important;
-    border-color: #44403c !important;
+.nav-item.active {
+    background: var(--bg-active);
+    color: var(--text-primary);
+    font-weight: 600;
 }
-
-body.bg-darker .memory-card:hover,
-body.bg-darker .memory-card:active {
-    border-color: #ea580c !important;
-    box-shadow: 0 4px 12px rgba(234, 88, 12, 0.15) !important;
+.nav-item .icon {
+    width: 18px;
+    text-align: center;
+    font-size: 16px;
+    opacity: 0.8;
 }
-
-body.bg-darker .memory-card.expanded {
-    background: #1c1917 !important;
-    border-color: #ea580c !important;
-}
-
-/* ==================== TEXT GRADIENT (card fade) ==================== */
-.card-fade-bottom {
-    position: relative;
+.nav-item .label {
+    flex: 1;
+    white-space: nowrap;
     overflow: hidden;
+    text-overflow: ellipsis;
 }
 
-.card-fade-bottom::after {
-    content: '';
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    height: 2rem;
-    background: linear-gradient(transparent, #292524);
-    pointer-events: none;
+/* Chat List Items */
+.chat-list-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 6px 10px;
+    margin: 1px 4px;
+    border-radius: 4px;
+    font-size: 13px;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all 0.15s ease;
+    border: 1px solid transparent;
+}
+.chat-list-item:hover {
+    background: var(--bg-hover);
+    color: var(--text-primary);
+}
+.chat-list-item.active {
+    background: var(--bg-active);
+    color: var(--text-primary);
+    font-weight: 500;
+}
+.chat-list-item .delete-chat {
+    opacity: 0;
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    cursor: pointer;
+    font-size: 14px;
+    padding: 4px;
+    border-radius: 3px;
+    transition: all 0.1s;
+}
+.chat-list-item:hover .delete-chat {
+    opacity: 1;
+}
+.chat-list-item .delete-chat:hover {
+    background: rgba(231, 76, 111, 0.1);
+    color: #e74c6f;
+}
+
+.divider {
+    height: 1px;
+    background: var(--border-color);
+    margin: 8px 0;
 }
 
 /* ==================== RESPONSIVE ==================== */

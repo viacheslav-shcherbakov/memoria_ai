@@ -21,7 +21,6 @@ const App = {
         this.setupPWA();
         this.setupAI();
         this.setupAnalytics();
-        this.setupProjectsTab();
         this.setupSettings();
 
         TagsManager.load(this.memories);
@@ -791,7 +790,7 @@ const App = {
         // Update theme toggle button emoji
         const toggleBtn = document.getElementById('theme-toggle');
         if (toggleBtn) {
-            toggleBtn.textContent = document.documentElement.classList.contains('dark') ? '🌙' : '☀️';
+            toggleBtn.textContent = document.documentElement.classList.contains('dark') ? '☀️' : '🌙';
         }
     },
 
@@ -858,7 +857,7 @@ const App = {
         // Синхронизируем чекбокс в настройках
         const darkToggle = document.getElementById('dark-mode-toggle');
         if (darkToggle) {
-            darkToggle.checked = isLight;
+            darkToggle.checked = !isDark; // Чекбокс checked = светлая тема
         }
     },
 
